@@ -14,19 +14,26 @@
         <div class="row">
             <div class="col fs-4">
                 <?php
-
                 $sum = 0;
 
+                echo '<div class="container">';
+                echo '<p>';
                 for ($num = 1; $num <= 100; $num++) {
-                    if ($num % 2 == 1) {
-                        echo $num . "<br>";
+                    if ($num % 2 === 0) {
+                        echo '<b>' . $num . '</b>';
                     } else {
-                        echo "<b>" . $num . "</b><br>";
+                        echo $num;
+                    }
+
+                    if ($num !== 100) {
+                        echo ' + ';
                     }
 
                     $sum += $num;
                 }
-                echo "<p class=\"fw-bold fs-2\">" . "The total sum of the numbers = " . $sum;
+                echo ' = ' . $sum;
+                echo '</p>';
+                echo '</div>';
                 ?></div>
         </div>
     </div>
