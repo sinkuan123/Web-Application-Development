@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+    <title>Exercise 1</title>
     <style>
         .num1 {
             color: green;
@@ -19,7 +20,6 @@
         }
 
         .multiple {
-            color: black;
             font-style: italic;
             font-weight: bold;
         }
@@ -28,8 +28,8 @@
 
 <body>
     <?php
-    $num1 = (rand());
-    $num2 = (rand());
+    $num1 = rand(100, 200);
+    $num2 = rand(100, 200);
     $sum = $num1 + $num2;
     $multiple = $num1 * $num2;
     echo "<p class=num1>The first random number is " . "$num1." . "</p><br>";
