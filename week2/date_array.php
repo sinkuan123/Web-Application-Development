@@ -11,12 +11,14 @@
 
 <body>
 
+    <!-- HTML form -->
     <form>
         <div class="row">
             <div class="col text-info">
                 <label for="day">Day</label>
                 <select class="form-select text-info" id="day" name="day">
                     <?php
+                    // Generate options for day
                     for ($i = 1; $i <= 31; $i++) {
                         echo "<option value=\"$i\">$i</option>";
                     }
@@ -27,9 +29,11 @@
                 <label for="month">Month</label>
                 <select class="form-select text-warning" id="month" name="month">
                     <?php
-                    for ($i = 1; $i <= 12; $i++) {
-                        $monthName = date("F", mktime(0, 0, 0, $i, 1));
-                        echo "<option value=\"$i\">$i</option>";
+                    // Generate options for month
+                    $monthNames = array('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December');
+
+                    for ($i = 0; $i <= 11; $i++) {
+                        echo "<option value=\"$monthNames\">$monthNames[$i]</option>";
                     }
                     ?>
                 </select>
@@ -38,6 +42,7 @@
                 <label for="year">Year</label>
                 <select class="form-select text-danger" id="year" name="year">
                     <?php
+                    // Generate options for year
                     $currentYear = date("Y");
                     for ($i = 1900; $i <= $currentYear; $i++) {
                         echo "<option value=\"$i\">$i</option>";
@@ -47,6 +52,7 @@
             </div>
         </div>
     </form>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
 </body>
 
 </html>
