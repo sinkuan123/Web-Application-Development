@@ -60,15 +60,16 @@
             $firstName = $_POST['firstName'];
             $lastName = $_POST['lastName'];
             $day = $_POST['day'];
-            $months =  $_POST['month' - 1];
+            $months =  $_POST['month'];
             $year = $_POST['year'];
             date_default_timezone_set('Asia/Kuala_Lumpur');
             $currentYear = date('Y');
             $currentMonth = date('m');
             $currentDay = date('d');
             $age = $currentYear - $year;
+
             // haven't had birthday yet
-            if ($month > $currentMonth || ($months == $currentMonth && $day > $currentDay)) {
+            if ($months > $currentMonth || ($months == $currentMonth && $day > $currentDay)) {
                 $age--;
             }
             if (empty($firstName) || empty($lastName)) {
@@ -81,11 +82,6 @@
                 $formattedLastName = ucwords(strtolower($lastName));
 
                 echo '<div class = "alert alert-info role="alert">' . "Name: " . $formattedLastName . " " . $formattedFirstName . "<br>Birthday: " . $month[$months - 1] . " " .  $day . ", " . $year . "<br>Age: " . $age . '</div>';
-            }
-            $age = $currentYear - $year;
-            // haven't had birthday yet
-            if ($month > $currentMonth || ($months == $currentMonth && $day > $currentDay)) {
-                $age--;
             }
             if ($age < 18) {
                 echo '<div class = "alert alert-danger role="alert">' . "Please leave the website." . '</div>';
