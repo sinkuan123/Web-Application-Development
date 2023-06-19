@@ -55,10 +55,6 @@
             $months =  $_POST['month'];
             $year = $_POST['year'];
             date_default_timezone_set('Asia/Kuala_Lumpur');
-            $currentYear = date('Y');
-            $currentMonth = date('m');
-            $currentDay = date('d');
-            $age = $currentYear - $year;
             $zodiac = "";
 
             $Czodiac = array("Monkey", "Rooster", "Dog", "Pig", "Rat", "Ox", "Tiger", "Rabbit", "Dragon", "Snake", "Horse", "Goat");
@@ -139,11 +135,12 @@
                     $zodiac = "Sagittarius";
                 }
             }
-            if (checkdate($day, $months, $year)) {
-                echo "<div class='alert alert-info role=alert'>" . "Your Chinese Zodiac is " . $Czodiac[$i] . ". </div>";
-                echo "<div class='alert alert-info role=alert'>" . "Your Zodiac is " . $zodiac . ". </div>";
+            if (checkdate($months, $day, $year)) {
+                echo "Your birthday is " . $month[$months - 1] . " " . $day . ", " . $year . "<br>";
+                echo "Your Chinese Zodiac is " . $Czodiac[$i] . ".<br>";
+                echo "Your Zodiac is " . $zodiac . ".";
             } else {
-                echo "<div class='alert alert-danger role=alert'>" . "Please select the valid date" . "</div>";
+                echo "Please select the valid date.";
             }
         }
         ?>
