@@ -63,7 +63,6 @@
 
             $Czodiac = array("Monkey", "Rooster", "Dog", "Pig", "Rat", "Ox", "Tiger", "Rabbit", "Dragon", "Snake", "Horse", "Goat");
             $i = $year % 12;
-            echo "<div class='alert alert-info role=alert'>" . "Your Chinese Zodiac is " . $Czodiac[$i] . ". </div>";
 
             if ($months == 1) {
                 if ($day <= 18) {
@@ -139,6 +138,12 @@
                 } else {
                     $zodiac = "Sagittarius";
                 }
+            }
+            if (checkdate($day, $months, $year)) {
+                echo "<div class='alert alert-info role=alert'>" . "Your Chinese Zodiac is " . $Czodiac[$i] . ". </div>";
+                echo "<div class='alert alert-info role=alert'>" . "Your Zodiac is " . $zodiac . ". </div>";
+            } else {
+                echo "<div class='alert alert-danger role=alert'>" . "Please select the valid date" . "</div>";
             }
         }
         ?>
