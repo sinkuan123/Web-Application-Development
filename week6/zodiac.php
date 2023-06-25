@@ -10,7 +10,7 @@
 
 <body>
     <div class="container">
-        <h1>Enter Your Name</h1>
+        <h1>Enter Your Birth Date</h1>
         <form method="POST" action="">
             <div class="form-group row row-col-3 my-2">
                 <div class="col">
