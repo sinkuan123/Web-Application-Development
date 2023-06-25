@@ -9,12 +9,12 @@
 </head>
 
 <body>
-    <div class="container">
+    <div class="container my-3">
         <h2>Enter Malaysian IC</h2>
         <form method="POST" action="">
-            <div class="form-group my-2">
+            <div class="form-group my-3">
                 <input class="form-control" type="text" name="ic" placeholder="Eg: xxxxxx-xx-xxxx" pattern="[0-9]{6}-[0-9]{2}-[0-9]{4}" required>
-                <button class="btn btn-primary my-2" type="submit" name="submit">Submit</button>
+                <button class="btn btn-primary my-3" type="submit" name="submit">Submit</button>
             </div>
         </form>
         <?php
@@ -190,6 +190,7 @@
                         $place_img = "img/putrajaya.jpg";
                     } else {
                         $place = "Not Found";
+                        $place_img = "";
                     }
 
                     if ($Czodiac[$i] == "Monkey") {
