@@ -23,15 +23,18 @@
             include 'config/database.php';
             try {
                 // insert query
-                $query = "INSERT INTO customers SET user_name=:user_name, user_password=:user_password, first_name=:first_name, last_name=:last_name, gender=:gender, date_of_birth=:date_of_birth, registration_date_time=:registration_date_time, account_status=:account_status";
+                $query = "INSERT INTO customers SET user_name=:user_name, user_password=:user_password, first_name=:first_name, last_name=:last_name, gender=:gender, date_of_birth=:date_of_birth,email=:email,  registration_date_time=:registration_date_time, account_status=:account_status";
                 // prepare query for execution
                 $stmt = $con->prepare($query);
                 $user_name = $_POST['user_name'];
                 $user_password = $_POST['user_password'];
+                $confirm_password = $_POST['confirm_password'];
+                $hashed_password = password_hash($user_password, PASSWORD_DEFAULT);
                 $first_name = $_POST['first_name'];
                 $last_name = $_POST['last_name'];
                 $gender = $_POST['gender'];
                 $date_of_birth = $_POST['date_of_birth'];
+                $email = $_POST['email'];
                 $account_status = $_POST['account_status'];
                 $usernamePattern = "/^[A-Za-z][A-Za-z0-9_-]{5,}$/";
                 $passwordPattern = "/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{6,}$/";
@@ -48,6 +51,12 @@
                 } else if (!preg_match($passwordPattern, $user_password)) {
                     $errorMessage[] = "Password must be at least 6 characters long and contain at least one uppercase letter, one lowercase letter, and one number. No special symbols allowed.";
                 }
+
+                if (empty($confirm_password)) {
+                    $errorMessage[] = "Confirm Password field is empty.";
+                } else if ($user_password !== $confirm_password) {
+                    $errorMessage[] = "Confirm Password must be same as Password";
+                }
                 if (empty($first_name)) {
                     $errorMessage[] = "First Name field is empty.";
                 }
@@ -59,6 +68,11 @@
                 }
                 if (empty($date_of_birth)) {
                     $errorMessage[] = "Date of Birth field is empty.";
+                }
+                if (empty($email)) {
+                    $errorMessage[] = "Email field is empty.";
+                } else if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    $errorMessage[] = "Invalid Email format.";
                 }
                 if (empty($account_status)) {
                     $errorMessage[] = "Account Status field is empty.";
@@ -74,14 +88,16 @@
                 } else {
                     // Bind the parameters
                     $stmt->bindParam(':user_name', $user_name);
-                    $stmt->bindParam(':user_password', $user_password);
+                    $stmt->bindParam(':user_password', $hashed_password);
                     $stmt->bindParam(':first_name', $first_name);
                     $stmt->bindParam(':last_name', $last_name);
                     $stmt->bindParam(':gender', $gender);
                     $stmt->bindParam(':date_of_birth', $date_of_birth);
+                    $stmt->bindParam(":email", $email);
                     date_default_timezone_set('Asia/Kuala_Lumpur');
                     $registration_date_time = date('Y-m-d H:i:s');
                     $stmt->bindParam(':registration_date_time', $registration_date_time);
+                    $stmt->bindParam(':email', $email);
                     $stmt->bindParam(':account_status', $account_status);
 
                     // Execute the query
@@ -95,7 +111,11 @@
             }
             // show error
             catch (PDOException $exception) {
-                die('ERROR: ' . $exception->getMessage());
+                if ($exception->getCode() == 23000) {
+                    echo '<div class="alert alert-danger role=alert">' . 'Username has been taken.' . '</div>';
+                } else {
+                    echo '<div class="alert alert-danger role=alert">' . $exception->getMessage() . '</div>';
+                }
             }
         }
         ?>
@@ -112,6 +132,10 @@
                     <tr>
                         <td>Password</td>
                         <td><input type="password" name='user_password' id='user_password' class='form-control' value="<?php echo isset($_POST['user_password']) ? $_POST['user_password'] : ''; ?>" /></td>
+                    </tr>
+                    <tr>
+                        <td>Confirm Password</td>
+                        <td><input type="password" name='confirm_password' id='confirm_password' class='form-control' value="<?php echo isset($_POST['user_password']) ? $_POST['user_password'] : ''; ?>" /></td>
                     </tr>
                     <tr>
                         <td>First Name</td>
@@ -135,6 +159,11 @@
                         <td>Date of Birth</td>
                         <td><input type='date' name='date_of_birth' class='form-control' value="<?php echo isset($_POST['date_of_birth']) ? $_POST['date_of_birth'] : ''; ?>" /></td>
                     </tr>
+                    <tr>
+                        <td>Email</td>
+                        <td><input type='email' name='email' class='form-control' value="<?php echo isset($_POST['email']) ? $_POST['email'] : ''; ?>" /></td>
+                    </tr>
+
                     <tr>
                         <td>Account Status</td>
                         <td><input type="radio" id="active" name="account_status" value="Active" checked>
