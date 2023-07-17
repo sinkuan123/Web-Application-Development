@@ -34,7 +34,6 @@
                         $query = "SELECT customer_id, user_name, user_password, email, account_status FROM customers WHERE user_name=:user_input OR email=:user_input";
                         $stmt = $con->prepare($query);
                         $stmt->bindParam(':user_input', $user_input);
-                        $stmt->bindParam(':user_input', $user_input);
                         $stmt->execute();
                         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
