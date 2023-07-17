@@ -31,7 +31,7 @@
                     $password_input_err = "Please enter the Password field";
                 } else {
                     try {
-                        $query = "SELECT customer_id, user_name, user_password, email, account_status FROM customers WHERE user_name=:user_input OR email=:user_input";
+                        $query = "SELECT user_name, user_password, email, account_status FROM customers WHERE user_name=:user_input OR email=:user_input";
                         $stmt = $con->prepare($query);
                         $stmt->bindParam(':user_input', $user_input);
                         $stmt->execute();
@@ -56,13 +56,13 @@
                     }
                 }
             }
-
             ?>
-            <div class="container w-50 border border-3 bg-light p-4 shadow ">
+
+            <div class="container w-50 border border-3 bg-light p-4 shadow my-5">
                 <form action="" method="post">
                     <div class="my-3">
                         <label for="user_input">Username/Email</label>
-                        <input type="text" name="user_input" id="user_input" class="form-control">
+                        <input type="text" name="user_input" id="user_input" class="form-control" value="<?php echo isset($_POST['user_input']) ? ($_POST['user_input']) : ''; ?>">
                         <span class="text-danger"> <?php echo isset($user_input_err) ? $user_input_err : '';  ?></span>
                     </div>
                     <div class="my-3">
@@ -77,10 +77,6 @@
                 </form>
             </div>
         </div>
-
-
-
-        <!-- PHP code to read records will be here -->
 
     </div> <!-- end .container -->
 

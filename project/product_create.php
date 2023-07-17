@@ -24,10 +24,11 @@
             include 'config/database.php';
             try {
                 // insert query
-                $query = "INSERT INTO products SET name=:name, description=:description, price=:price, promotion_price=:promotion_price, manufacture_date=:manufacture_date, expired_date=:expired_date, created=:created";
+                $query = "INSERT INTO products SET name=:name, category_id=:category_id, description=:description, price=:price, promotion_price=:promotion_price, manufacture_date=:manufacture_date, expired_date=:expired_date, created=:created";
                 // prepare query for execution
                 $stmt = $con->prepare($query);
                 $name = $_POST['name'];
+                $category_id = $_POST['category_id'];
                 $description = $_POST['description'];
                 $price = $_POST['price'];
                 $promotion_price = $_POST['promotion_price'];
@@ -51,9 +52,7 @@
                 } else if (!is_numeric($price)) {
                     $errorMessage[] = "Prices can only be numbers.";
                 }
-                if (empty($promotion_price)) {
-                    $errorMessage[] = "Promotion price field is empty.";
-                } else if (!is_numeric($promotion_price)) {
+                if (!is_numeric($promotion_price)) {
                     $errorMessage[] = "Promotion prices can only be numbers.";
                 }
                 if (empty($manufacture_date)) {
@@ -79,6 +78,7 @@
                 } else {
                     // Bind the parameters
                     $stmt->bindParam(':name', $name);
+                    $stmt->bindParam(':category_id', $category_id);
                     $stmt->bindParam(':description', $description);
                     $stmt->bindParam(':price', $price);
                     $stmt->bindParam(':promotion_price', $promotion_price);
@@ -110,6 +110,33 @@
                     <tr>
                         <td>Name</td>
                         <td><input type='text' name='name' id='name' class='form-control' value="<?php echo isset($_POST['name']) ? $_POST['name'] : ''; ?>" /></td>
+                    </tr>
+                    <tr>
+                        <td>Category</td>
+                        <td>
+                            <select name="category_id" id="category_id" class="form-select">
+                                <?php
+                                include "config/database.php";
+                                $mysql = "SELECT id, category_name FROM product_category";
+                                $stmt = $con->prepare($mysql);
+                                $stmt->execute();
+                                $num = $stmt->rowCount();
+
+                                if ($num > 0) {
+                                    $options = array();
+                                    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                        $options[$row['id']] = $row['category_name'];
+                                    }
+                                }
+
+                                foreach ($options as $id => $category_name) {
+                                    echo "<option value='" . $id . "'>" . $category_name . "</option>";
+                                }
+
+
+                                ?>
+                            </select>
+                        </td>
                     </tr>
                     <tr>
                         <td>Description</td>

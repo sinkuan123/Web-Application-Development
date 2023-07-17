@@ -24,10 +24,9 @@
         $search = isset($_GET['search']) ? $_GET['search'] : '';
 
         // select all data
-        //inner join method to make query that combine two tables
-        $query = "SELECT id, name, description, promotion_price, price FROM products INNER JOIN ";
+        $query = "SELECT id, category_name, description FROM product_category";
         if (!empty($search)) {
-            $query .= " WHERE name LIKE :search";
+            $query .= " WHERE category_name LIKE :search";
             $search = "%{$search}%";
         }
 
@@ -46,7 +45,7 @@
 
         // link to create record form
         ?><div class="d-flex justify-content-between align-items-center">
-            <div><a href='product_create.php' class='btn btn-primary m-b-1em'>Create New Product</a></div>
+            <div><a href='product_create.php' class='btn btn-primary m-b-1em'>Create New Product Category</a></div>
             <div class="w-50">
                 <form method="GET" action="" class="mb-3">
                     <div class="input-group">
@@ -64,37 +63,17 @@
             //creating our table heading
             echo "<tr>";
             echo "<th>ID</th>";
-            echo "<th>Name</th>";
+            echo "<th>Category Name</th>";
             echo "<th>Description</th>";
-            echo "<th>Price</th>";
-            echo "<th>Action</th>";
             echo "</tr>";
 
             // table body will be here
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                // extract row
-                // this will make $row['firstname'] to just $firstname only
                 extract($row);
-                // creating new table row per record
                 echo "<tr>";
                 echo "<td>{$id}</td>";
-                echo "<td>{$name}</td>";
-                echo "<td class='col-6'>{$description}</td>";
-                if ($promotion_price != 0) {
-                    echo "<td class='d-flex justify-content-end'><p class='me-1 text-decoration-line-through''>" . number_format((float)$price, 2, '.', '') . "</p><p >"  . number_format((float)$promotion_price, 2, '.', '') .  "</p></td>";
-                } else {
-                    echo "<td class='text-end'>" . number_format((float)$price, 2, '.', '') . "</td>";
-                }
-                echo "<td class='col-3 text-center'>";
-                // read one record
-                echo "<a href='product_read_one.php?id={$id}' class='btn btn-info m-r-1em mx-2'>Read</a>";
-
-                // we will use this links on next part of this post
-                echo "<a href='product_update.php?id={$id}' class='btn btn-primary m-r-1em mx-2'>Edit</a>";
-
-                // we will use this links on next part of this post
-                echo "<a href='#' onclick='delete_product({$id});'  class='btn btn-danger mx-2'>Delete</a>";
-                echo "</td>";
+                echo "<td>{$category_name}</td>";
+                echo "<td class='col-9'>{$description}</td>";
                 echo "</tr>";
             }
 
