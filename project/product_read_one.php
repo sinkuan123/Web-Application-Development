@@ -27,7 +27,7 @@
         // read current record's data
         try {
             // prepare select query
-            $query = "SELECT id, name, description, price, promotion_price, manufacture_date, expired_date FROM products WHERE id = :id ";
+            $query = "SELECT products.id, products.name, products.description, products.promotion_price, products.price, products.manufacture_date, products.expired_date, product_category.category_name FROM products INNER JOIN product_category  ON products.category_id = product_category.id WHERE products.id=:id";
             $stmt = $con->prepare($query);
 
             // Bind the parameter
@@ -42,6 +42,7 @@
             // values to fill up our form
             $name = $row['name'];
             $description = $row['description'];
+            $category_name = $row['category_name'];
             $price = $row['price'];
             $promotion_price = $row['promotion_price'];
             $manufacture_date = $row['manufacture_date'];
@@ -65,6 +66,10 @@
             <tr>
                 <td class="col-3">Name</td>
                 <td><?php echo htmlspecialchars($name, ENT_QUOTES);  ?></td>
+            </tr>
+            <tr>
+                <td>Category</td>
+                <td><?php echo htmlspecialchars($category_name, ENT_QUOTES);  ?></td>
             </tr>
             <tr>
                 <td>Description</td>

@@ -25,7 +25,7 @@
 
         // select all data
         //inner join method to make query that combine two tables
-        $query = "SELECT id, name, description, promotion_price, price FROM products INNER JOIN ";
+        $query = "SELECT products.id, products.name, products.description, products.promotion_price, products.price, product_category.category_name FROM products INNER JOIN product_category  ON products.category_id = product_category.id";
         if (!empty($search)) {
             $query .= " WHERE name LIKE :search";
             $search = "%{$search}%";
@@ -65,6 +65,7 @@
             echo "<tr>";
             echo "<th>ID</th>";
             echo "<th>Name</th>";
+            echo "<th>Category</th>";
             echo "<th>Description</th>";
             echo "<th>Price</th>";
             echo "<th>Action</th>";
@@ -79,6 +80,7 @@
                 echo "<tr>";
                 echo "<td>{$id}</td>";
                 echo "<td>{$name}</td>";
+                echo "<td>{$category_name}</td>";
                 echo "<td class='col-6'>{$description}</td>";
                 if ($promotion_price != 0) {
                     echo "<td class='d-flex justify-content-end'><p class='me-1 text-decoration-line-through''>" . number_format((float)$price, 2, '.', '') . "</p><p >"  . number_format((float)$promotion_price, 2, '.', '') .  "</p></td>";
