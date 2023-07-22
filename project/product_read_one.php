@@ -27,7 +27,8 @@
         // read current record's data
         try {
             // prepare select query
-            $query = "SELECT products.id, products.name, products.description, products.promotion_price, products.price, products.manufacture_date, products.expired_date, product_category.category_name FROM products INNER JOIN product_category  ON products.category_id = product_category.id WHERE products.id=:id";
+            $query = "SELECT products.id, products.name, products.description, products.promotion_price, products.price, products.manufacture_date, products.expired_date,
+             product_category.category_name FROM products INNER JOIN product_category  ON products.category_id = product_category.id WHERE products.id=:id";
             $stmt = $con->prepare($query);
 
             // Bind the parameter
