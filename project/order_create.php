@@ -18,41 +18,67 @@
         <?php
         include 'config/database.php';
 
+        $customer_query = "SELECT customer_id, user_name FROM customers";
+        $customer_stmt = $con->prepare($customer_query);
+        $customer_stmt->execute();
+
+        $customers = $customer_stmt->fetchAll(PDO::FETCH_ASSOC);
+
         $product_query = "SELECT id, name FROM products";
         $product_stmt = $con->prepare($product_query);
         $product_stmt->execute();
 
         $products = $product_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        if ($_SERVER["REQUEST_METHOD"] === "POST") {
+        if ($_POST) {
             try {
-                $customer_id = $_POST['customer'];
-                date_default_timezone_set('Asia/Kuala_Lumpur');
-                $order_date = date('Y-m-d H:i:s');
-
-                $order_sumary_query = "INSERT INTO order_sumary SET customer_id=:customer_id, order_date=:order_date";
-                $order_sumary_stmt = $con->prepare($order_sumary_query);
-                $order_sumary_stmt->bindParam(":customer_id", $customer_id);
-                $order_sumary_stmt->bindParam(":order_date", $order_date);
-                $order_sumary_stmt->execute();
-
-
-                $order_id = $con->lastInsertId();
+                $error = array();
 
                 for ($i = 1; $i <= 3; $i++) {
                     $product_id = $_POST["product{$i}"];
                     $quantity = $_POST["quantity{$i}"];
-
-                    $order_detail_query = "INSERT INTO order_detail SET order_id=:order_id, customer_id=:customer_id, product_id=:product_id, quantity=:quantity";
-                    $order_detail_stmt = $con->prepare($order_detail_query);
-                    $order_detail_stmt->bindParam(":order_id", $order_id);
-                    $order_detail_stmt->bindParam(":customer_id", $customer_id);
-
-                    $order_detail_stmt->bindParam(":product_id", $product_id);
-                    $order_detail_stmt->bindParam(":quantity", $quantity);
-                    $order_detail_stmt->execute();
+                    if (empty($quantity)) {
+                        $quantity_err = $product_stmt->fetch(PDO::FETCH_ASSOC);
+                        $error[] = "Please fill in the quantity for product " . $i . ".";
+                    } else if ($quantity == 0) {
+                        $error[] = "Quantity Can not be zero.";
+                    }
                 }
-                echo "<div class='alert alert-success' role='alert'>Order Placed Successfully.</div>";
+
+                if (!empty($error)) {
+                    echo "<div class='alert alert-danger role='alert'>";
+                    foreach ($error as $error_message) {
+                        echo $error_message . "<br>";
+                    }
+                    echo "</div>";
+                } else {
+                    $customer_id = $_POST['customer'];
+                    date_default_timezone_set('Asia/Kuala_Lumpur');
+                    $order_date = date('Y-m-d H:i:s');
+
+                    $order_sumary_query = "INSERT INTO order_sumary SET customer_id=:customer_id, order_date=:order_date";
+                    $order_sumary_stmt = $con->prepare($order_sumary_query);
+                    $order_sumary_stmt->bindParam(":customer_id", $customer_id);
+                    $order_sumary_stmt->bindParam(":order_date", $order_date);
+                    $order_sumary_stmt->execute();
+
+                    $order_id = $con->lastInsertId();
+
+                    for ($i = 1; $i <= 3; $i++) {
+                        $product_id = $_POST["product{$i}"];
+                        $quantity = $_POST["quantity{$i}"];
+
+                        $order_detail_query = "INSERT INTO order_detail SET order_id=:order_id, customer_id=:customer_id, product_id=:product_id, quantity=:quantity";
+                        $order_detail_stmt = $con->prepare($order_detail_query);
+                        $order_detail_stmt->bindParam(":order_id", $order_id);
+                        $order_detail_stmt->bindParam(":customer_id", $customer_id);
+
+                        $order_detail_stmt->bindParam(":product_id", $product_id);
+                        $order_detail_stmt->bindParam(":quantity", $quantity);
+                        $order_detail_stmt->execute();
+                    }
+                    echo "<div class='alert alert-success' role='alert'>Order Placed Successfully.</div>";
+                }
             } catch (PDOException $exception) {
                 echo '<div class="alert alert-danger role=alert">' . $exception->getMessage() . '</div>';
             }
@@ -62,21 +88,8 @@
             <form action="" method="post">
                 <select name="customer" id="customer" class="form-select w-50 my-4">
                     <?php
-                    include "config/database.php";
-                    $customer_query = "SELECT customer_id, user_name FROM customers";
-                    $customer_stmt = $con->prepare($customer_query);
-                    $customer_stmt->execute();
-                    $num = $customer_stmt->rowCount();
-
-                    if ($num > 0) {
-                        $options = array();
-                        while ($row = $customer_stmt->fetch(PDO::FETCH_ASSOC)) {
-                            $options[$row['customer_id']] = $row['user_name'];
-                        }
-                    }
-
-                    foreach ($options as $customer_id => $user_name) {
-                        echo "<option value='" . $customer_id . "'>" . $user_name . "</option>";
+                    foreach ($customers as $customer) {
+                        echo "<option value='{$customer['customer_id']}'>{$customer['user_name']}</option>";
                     }
                     ?>
                 </select>
@@ -97,7 +110,7 @@
                                 </select>
                             </td>
                             <td>
-                                <input type="number" class="form-control" name="quantity<?php echo $i ?>" id="quantity">
+                                <input type="number" class="form-control" name="quantity<?php echo $i ?>" id="quantity" min="1">
                             </td>
                         </tr>
                     <?php endfor ?>
@@ -107,10 +120,6 @@
                 </div>
             </form>
         </div>
-
-
-
-
     </div> <!-- end .container -->
 
     <!-- confirm delete record will be here -->
