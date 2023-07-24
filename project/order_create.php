@@ -67,11 +67,11 @@
                     date_default_timezone_set('Asia/Kuala_Lumpur');
                     $order_date = date('Y-m-d H:i:s');
 
-                    $order_sumary_query = "INSERT INTO order_sumary SET customer_id=:customer_id, order_date=:order_date";
-                    $order_sumary_stmt = $con->prepare($order_sumary_query);
-                    $order_sumary_stmt->bindParam(":customer_id", $customer_id);
-                    $order_sumary_stmt->bindParam(":order_date", $order_date);
-                    $order_sumary_stmt->execute();
+                    $order_summary_query = "INSERT INTO order_summary SET customer_id=:customer_id, order_date=:order_date";
+                    $order_summary_stmt = $con->prepare($order_summary_query);
+                    $order_summary_stmt->bindParam(":customer_id", $customer_id);
+                    $order_summary_stmt->bindParam(":order_date", $order_date);
+                    $order_summary_stmt->execute();
 
                     $order_id = $con->lastInsertId(); //Get the order_id from last inserted row.
 
@@ -85,6 +85,7 @@
                         $order_detail_stmt->execute();
                     }
                     echo "<div class='alert alert-success' role='alert'>Order Placed Successfully.</div>";
+                    $_POST = array();
                 }
             } catch (PDOException $exception) {
                 echo '<div class="alert alert-danger role=alert">' . $exception->getMessage() . '</div>';
@@ -149,7 +150,7 @@
 
                 <div class="text-center">
                     <button type="submit" class="btn btn-primary">Place Order</button>
-                    <a href="" class="btn btn-danger">Back to Read Order Sumary</a>
+                    <a href="" class="btn btn-danger">Back to Read Order Summary</a>
                 </div>
             </form>
             <script>

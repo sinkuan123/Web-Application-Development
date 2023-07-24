@@ -24,7 +24,7 @@
         $search = isset($_GET['search']) ? $_GET['search'] : '';
 
         // select all data
-        $query = "SELECT order_detail.order_detail_id, order_detail.order_id, products_name, order_detail.quantity FROM order_detail INNER JOIN products ON products.id=order_detail.product_id";
+        $query = "SELECT order_detail.order_detail_id, order_detail.order_id, products.name, order_detail.quantity FROM order_detail INNER JOIN products ON products.id=order_detail.product_id";
         if (!empty($search)) {
             $query .= " WHERE order_id LIKE :search OR order_detail_id LIKE :search OR quantity LIKE :search OR name LIKE :search";
             $search = "%{$search}%";
@@ -65,18 +65,18 @@
             echo "<th class='col-1'>Order Detail ID</th>";
             echo "<th class='col-1'>Order ID</th>";
             echo "<th>Product Name</th>";
+            echo "<th>Quantity</th>";
             echo "</tr>";
 
             // table body will be here
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 extract($row);
                 echo "<tr>";
+                echo "<td>{$order_detail_id}</td>";
                 echo "<td>{$order_id}</td>";
-                echo "<td>{$user_name}</td>";
-                echo "<td>{$order_date}</td>";
+                echo "<td>{$name}</td>";
+                echo "<td>{$quantity}</td>";
             }
-
-
             // end table
             echo "</table>";
 
@@ -86,10 +86,6 @@
             echo "<div class='alert alert-danger'>No records found.</div>";
         }
         ?>
-
-
-
-
         <!-- PHP code to read records will be here -->
 
     </div> <!-- end .container -->

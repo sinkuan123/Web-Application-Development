@@ -24,7 +24,7 @@
         $search = isset($_GET['search']) ? $_GET['search'] : '';
 
         // select all data
-        $query = "SELECT order_sumary.order_id, order_sumary.customer_id, order_sumary.order_date, customers.user_name FROM order_sumary INNER JOIN customers ON customers.customer_id=order_sumary.customer_id";
+        $query = "SELECT order_summary.order_id, order_summary.customer_id, order_summary.order_date, customers.user_name FROM order_summary INNER JOIN customers ON customers.customer_id=order_summary.customer_id";
         if (!empty($search)) {
             $query .= " WHERE order_id LIKE :search OR user_name LIKE :search OR order_date LIKE :search";
             $search = "%{$search}%";
