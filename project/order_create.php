@@ -21,24 +21,19 @@
         $customer_query = "SELECT customer_id, user_name FROM customers";
         $customer_stmt = $con->prepare($customer_query);
         $customer_stmt->execute();
-
         $customers = $customer_stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $product_query = "SELECT id, name FROM products";
         $product_stmt = $con->prepare($product_query);
         $product_stmt->execute();
-
         $products = $product_stmt->fetchAll(PDO::FETCH_ASSOC);
 
         if ($_POST) {
             try {
                 $error = array();
-
                 for ($i = 1; $i <= 3; $i++) {
-                    $product_id = $_POST["product{$i}"];
                     $quantity = $_POST["quantity{$i}"];
                     if (empty($quantity)) {
-                        $quantity_err = $product_stmt->fetch(PDO::FETCH_ASSOC);
                         $error[] = "Please fill in the quantity for product " . $i . ".";
                     } else if ($quantity == 0) {
                         $error[] = "Quantity Can not be zero.";
@@ -62,7 +57,7 @@
                     $order_sumary_stmt->bindParam(":order_date", $order_date);
                     $order_sumary_stmt->execute();
 
-                    $order_id = $con->lastInsertId();
+                    $order_id = $con->lastInsertId(); //Get the order_id that last inserted.
 
                     for ($i = 1; $i <= 3; $i++) {
                         $product_id = $_POST["product{$i}"];
