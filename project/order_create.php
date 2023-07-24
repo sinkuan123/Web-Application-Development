@@ -28,35 +28,31 @@
         $product_stmt->execute();
         $products = $product_stmt->fetchAll(PDO::FETCH_ASSOC);
 
+        $selected_product_count = 1;
+        $error = array();
+        $product_id = '';
         if ($_POST) {
-            try {
-                $error = array();
 
-                if (isset($_POST['customer'])) {
-                    $customer_id = $_POST['customer'];
-                } else {
+            $product_id = $_POST["product"];
+            $quantity = $_POST["quantity"];
+            $customer_id = $_POST['customer'];
+            $selected_product_count = count($_POST['product']);
+
+            try {
+                if ($customer_id == "") {
                     $error[] = "Please choose your user name.";
                 }
 
-                // var_dump($_POST);
-                if (isset($_POST['product'])) {
-                    $selected_product_count = count($_POST['product']);
-                } else {
-                    $error[] = "Select unless one product.";
-                }
                 if (isset($selected_product_count)) {
                     for ($i = 0; $i < $selected_product_count; $i++) {
-
-                        $product_id = $_POST["product"];
-                        $quantity = $_POST["quantity"];
-                        if (!isset($product_id)) {
+                        if ($product_id[$i] == "") {
                             $error[] = " Please choose the product for NO " . $i + 1 . ".";
                         }
 
-                        if (empty($quantity)) {
-                            $error[] = "Please fill in the quantity for product NO " . $i + 1 . ".";
-                        } else if ($quantity == 0) {
-                            $error[] = "Quantity Can not be zero.";
+                        if ($quantity[$i] == 0 || empty($quantity[$i])) {
+                            $error[] = "Quantity Can not be zero or empty.";
+                        } else if ($quantity[$i] < 0) {
+                            $error[] = "Quantity Can not be negative number.";
                         }
                     }
                 }
@@ -80,13 +76,10 @@
                     $order_id = $con->lastInsertId(); //Get the order_id from last inserted row.
 
                     for ($i = 0; $i < $selected_product_count; $i++) {
-                        $product_id = $_POST["product"];
-                        $quantity = $_POST["quantity"];
 
-                        $order_detail_query = "INSERT INTO order_detail SET order_id=:order_id, customer_id=:customer_id, product_id=:product_id, quantity=:quantity";
+                        $order_detail_query = "INSERT INTO order_detail SET order_id=:order_id, product_id=:product_id, quantity=:quantity";
                         $order_detail_stmt = $con->prepare($order_detail_query);
                         $order_detail_stmt->bindParam(":order_id", $order_id);
-                        $order_detail_stmt->bindParam(":customer_id", $customer_id);
                         $order_detail_stmt->bindParam(":product_id", $product_id[$i]);
                         $order_detail_stmt->bindParam(":quantity", $quantity[$i]);
                         $order_detail_stmt->execute();
@@ -101,10 +94,11 @@
         <div>
             <form action="" method="post">
                 <select name="customer" id="customer" class="form-select w-50 my-4">
-                    <option value="" selected hidden disabled>Choose your name</option>
+                    <option value="">Choose your name</option>
                     <?php
-                    foreach ($customers as $customer) {
-                        echo "<option value='{$customer['customer_id']}'>{$customer['user_name']}</option>";
+                    for ($x = 0; $x < count($customers); $x++) {
+                        $customer_selected = isset($_POST["customer"]) && $customers[$x]['customer_id'] == $_POST["customer"] ? "selected" : "";
+                        echo "<option value='{$customers[$x]['customer_id']}' $customer_selected>{$customers[$x]['user_name']}</option>";
                     }
                     ?>
                 </select>
@@ -115,27 +109,35 @@
                         <th>Quantity</th>
                         <th>Actions</th>
                     </tr>
-                    <tr class="pRow">
-                        <td class="col-1">
-                            1
-                        </td>
-                        <td>
-                            <select name="product[]" id="product" class="form-select">
-                                <option value="" selected disabled hidden>Choose a Product</option>
-                                <?php
-                                foreach ($products as $product) {
-                                    echo "<option value='{$product['id']}'>{$product['name']}</option>";
-                                }
-                                ?>
-                            </select>
-                        </td>
-                        <td>
-                            <input type="number" class="form-control" name="quantity[]" id="quantity" min="1">
-                        </td>
-                        <td>
-                            <input href='#' onclick='deleteRow(this)' class='btn d-flex justify-content-center btn-danger mt-1' readonly value="Delete" />
-                        </td>
-                    </tr>
+                    <?php
+                    $product_loop = (!empty($error)) ? $selected_product_count : 1;
+                    for ($x = 0; $x < $product_loop; $x++) {
+                    ?>
+                        <tr class="pRow">
+                            <td class="col-1">
+                                <?php echo $x + 1; ?>
+                            </td>
+                            <td>
+                                <select name="product[]" id="product" class="form-select" value>
+                                    <option value="">Choose a Product</option>
+                                    <?php
+                                    for ($i = 0; $i < count($products); $i++) {
+                                        $product_selected = isset($_POST["product"]) && $products[$i]['id'] == $_POST["product"][$x] ? "selected" : "";
+                                        echo "<option value='{$products[$i]['id']}' $product_selected>{$products[$i]['name']}</option>";
+                                    }
+                                    ?>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="number" class="form-control" name="quantity[]" id="quantity" value="<?php echo isset($_POST['quantity']) ? $_POST['quantity'][$x] : 1; ?>">
+
+                            </td>
+                            <td>
+                                <input href='#' onclick='deleteRow(this)' class='btn d-flex justify-content-center btn-danger mt-1' readonly value="Delete" />
+                            </td>
+                        </tr>
+                    <?php }
+                    ?>
                     <tr>
                         <td></td>
                         <td>
@@ -190,7 +192,6 @@
 
     <!-- confirm delete record will be here -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
-
 </body>
 
 </html>
