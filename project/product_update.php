@@ -30,7 +30,7 @@
     <div class="container">
         <?php include 'menu.php' ?>
         <div class="page-header">
-            <h1>Create Order</h1>
+            <h1>Update Product</h1>
         </div>
         <!-- PHP read record by ID will be here -->
         <?php
