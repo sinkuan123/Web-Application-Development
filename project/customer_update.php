@@ -161,7 +161,15 @@
                 </tr>
                 <tr>
                     <td>Account Status</td>
-                    <td><input type='text' name='account_status' value="<?php echo htmlspecialchars($account_status, ENT_QUOTES);  ?>" class='form-control' /></td>
+                    <td><input type="radio" id="active" name="account_status" value="Active" <?php if ($row['account_status'] == "Active") {
+                                                                                                    echo 'checked';
+                                                                                                } ?>>
+
+                        <label for="active">Active</label><br>
+                        <input type="radio" id="inactive" name="account_status" value="Inactive" <?php if ($row['account_status'] == "Inactive") {
+                                                                                                        echo 'checked';
+                                                                                                    } ?>>
+                        <label for="inactive">Inactive</label>
                 </tr>
                 <tr>
                     <td></td>

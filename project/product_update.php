@@ -5,24 +5,6 @@
     <title>PDO - Read Records - PHP CRUD Tutorial</title>
     <!-- Latest compiled and minified Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
-
-    <style>
-        .m-r-1em {
-            margin-right: 1em;
-        }
-
-        .m-b-1em {
-            margin-bottom: 1em;
-        }
-
-        .m-l-1em {
-            margin-left: 1em;
-        }
-
-        .mt0 {
-            margin-top: 0;
-        }
-    </style>
 </head>
 
 <body>
@@ -44,7 +26,8 @@
         // read current record's data
         try {
             // prepare select query
-            $query = "SELECT id, name, description, price FROM products WHERE id = ? LIMIT 0,1";
+            $query = "SELECT products.id, products.name, products.category_id, products.description, products.promotion_price, products.price, products.manufacture_date, products.expired_date,product_category.category_name FROM products INNER JOIN product_category  ON products.category_id = product_category.id WHERE products.id = ? LIMIT 0,1";
+
             $stmt = $con->prepare($query);
 
             // this is the first question mark
@@ -59,7 +42,11 @@
             // values to fill up our form
             $name = $row['name'];
             $description = $row['description'];
+            $category_id = $row['category_id'];
             $price = $row['price'];
+            $promotion_price = $row['promotion_price'];
+            $manufacture_date = $row['manufacture_date'];
+            $expired_date = $row['expired_date'];
         }
 
         // show error
@@ -77,18 +64,26 @@
                 // in this case, it seemed like we have so many fields to pass and
                 // it is better to label them and not use question marks
                 $query = "UPDATE products
-                SET name=:name, description=:description,
-                price=:price WHERE id = :id";
+                SET name=:name, description=:description, category_id=:category_id,
+                price=:price, promotion_price=:promotion_price,manufacture_date=:manufacture_date, expired_date=:expired_date  WHERE products.id = :id";
                 // prepare query for excecution
                 $stmt = $con->prepare($query);
                 // posted values
                 $name = htmlspecialchars(strip_tags($_POST['name']));
                 $description = htmlspecialchars(strip_tags($_POST['description']));
+                $category_id = $_POST['category_id'];
                 $price = htmlspecialchars(strip_tags($_POST['price']));
+                $promotion_price = htmlspecialchars(strip_tags($_POST['promotion_price']));
+                $manufacture_date = htmlspecialchars(strip_tags($_POST['manufacture_date']));
+                $expired_date = htmlspecialchars(strip_tags($_POST['expired_date']));
                 // bind the parameters
                 $stmt->bindParam(':name', $name);
                 $stmt->bindParam(':description', $description);
+                $stmt->bindParam(":category_id", $category_id);
                 $stmt->bindParam(':price', $price);
+                $stmt->bindParam(':promotion_price', $promotion_price);
+                $stmt->bindParam(":manufacture_date", $manufacture_date);
+                $stmt->bindParam(":expired_date", $expired_date);
                 $stmt->bindParam(':id', $id);
                 // Execute the query
                 if ($stmt->execute()) {
@@ -115,8 +110,40 @@
                     <td><textarea name='description' class='form-control'><?php echo htmlspecialchars($description, ENT_QUOTES);  ?></textarea></td>
                 </tr>
                 <tr>
+                    <td>Category</td>
+                    <td><select name='category_id' class='form-select'>
+                            <?php
+                            include "config/database.php";
+                            $category_sql = "SELECT id, category_name FROM product_category";
+                            $category_stmt = $con->prepare($category_sql);
+                            $category_stmt->execute();
+
+                            while ($category_row = $category_stmt->fetch(PDO::FETCH_ASSOC)) {
+                                $all_category = $category_row['id'];
+                                $category_name = $category_row['category_name'];
+
+                                $selected = ($all_category == $row['category_id']) ? "selected" : "";
+                                echo "<option value='" . $all_category . "' $selected>" . htmlspecialchars($category_name) . "</option>";
+                            }
+
+
+                            ?></select></td>
+                </tr>
+                <tr>
                     <td>Price</td>
                     <td><input type='text' name='price' value="<?php echo htmlspecialchars($price, ENT_QUOTES);  ?>" class='form-control' /></td>
+                </tr>
+                <tr>
+                    <td>promotion_price</td>
+                    <td><input type='text' name='promotion_price' value="<?php echo htmlspecialchars($promotion_price, ENT_QUOTES);  ?>" class='form-control' /></td>
+                </tr>
+                <tr>
+                    <td>Manufacture Date</td>
+                    <td><input type='date' name='manufacture_date' value="<?php echo htmlspecialchars($manufacture_date, ENT_QUOTES);  ?>" class='form-control' /></td>
+                </tr>
+                <tr>
+                    <td>Expired Date</td>
+                    <td><input type='date' name='expired_date' value="<?php echo htmlspecialchars($expired_date, ENT_QUOTES);  ?>" class='form-control' /></td>
                 </tr>
                 <tr>
                     <td></td>
