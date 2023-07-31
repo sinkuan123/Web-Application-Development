@@ -74,8 +74,8 @@
                 $category_id = $_POST['category_id'];
                 $price = htmlspecialchars(strip_tags($_POST['price']));
                 $promotion_price = htmlspecialchars(strip_tags($_POST['promotion_price']));
-                $manufacture_date = htmlspecialchars(strip_tags($_POST['manufacture_date']));
-                $expired_date = htmlspecialchars(strip_tags($_POST['expired_date']));
+                $manufacture_date = htmlspecialchars($_POST['manufacture_date']);
+                $expired_date = htmlspecialchars($_POST['expired_date']);
                 // bind the parameters
                 $stmt->bindParam(':name', $name);
                 $stmt->bindParam(':description', $description);

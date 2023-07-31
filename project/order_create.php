@@ -56,6 +56,7 @@
                         }
                     }
                 }
+
                 if (!empty($error)) {
                     echo "<div class='alert alert-danger role='alert'>";
                     foreach ($error as $error_message) {
@@ -111,8 +112,21 @@
                         <th>Actions</th>
                     </tr>
                     <?php
+
+                    $original = $product_id;
+                    $noduplicate = array_unique($original);
+
                     $product_loop = (!empty($error)) ? $selected_product_count : 1;
                     for ($x = 0; $x < $product_loop; $x++) {
+                        if (sizeof($noduplicate) != sizeof($original)) {
+                            foreach ($original as $key => $val) {
+                                if (!array_key_exists($key, $noduplicate)) {
+                                    array_splice($product_id, $key, 1);
+                                    array_splice($quantity, $key, 1);
+                                }
+                            }
+                            print_r(array_values($noduplicate));
+                        }
                     ?>
                         <tr class="pRow">
                             <td class="col-1">

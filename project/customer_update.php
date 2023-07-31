@@ -46,10 +46,10 @@
         if ($_POST) {
             try {
                 $query = "UPDATE customers
-                SET user_name=:user_name, user_password=:user_password, first_name=:first_name, last_name=:last_name, gender=:gender, date_of_birth=:date_of_birth, email=:email,
-                account_status=:account_status WHERE customer_id = :id";
+                SET user_name=:user_name, first_name=:first_name, last_name=:last_name, gender=:gender, date_of_birth=:date_of_birth, email=:email,
+                account_status=:account_status";
                 // prepare query for excecution
-                $stmt = $con->prepare($query);
+
                 // posted values
                 $user_name = htmlspecialchars(strip_tags($_POST['user_name']));
                 $old_password = $_POST['old_password'];
@@ -63,21 +63,23 @@
                 $account_status = htmlspecialchars(strip_tags($_POST['account_status']));
 
                 $error = array();
-                if (!empty($_POST['old_password'])) {
-                    if (password_verify($old_password, $row['user_password'])) {
-                        if ($new_password == $old_password) {
-                            $error[] = "New Password can not same with Old Password.";
-                        } else if ($new_password == $confirm_password) {
-                            $formatted_password = password_hash($new_password, PASSWORD_DEFAULT);
+                // check !empty, check format, compare new and confirm, then old compare db, old compare new.(password)
+                if (!empty($old_password) && !empty($new_password) && !empty($confirm_password)) {
+                    if ($new_password == $confirm_password) {
+                        if ($old_password == $password) {
+                            if ($old_password == $new_password) {
+                                $error[] = "New Password can't be same with Old Password";
+                            } else {
+                                $formatted_password = $new_password;
+                            }
                         } else {
-                            $error[] = "New Password does not match with confirm password.";
+                            $error[] = "Wrong password entered in old password column";
                         }
                     } else {
-                        $error[] = "You Entered the wrong password for old password";
+                        $error[] = "The confirm password doesn't match with new password.";
                     }
-                } else {
-                    $formatted_password = $password;
                 }
+
 
                 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                     $error[] = "Invalid Email format.";
@@ -90,9 +92,17 @@
                     }
                     echo "</div>";
                 } else {
+                    if (isset($formatted_password)) {
+                        $query .= ", user_password=:user_password";
+                    }
+
+                    $query .= " WHERE customer_id=:id";
+                    $stmt = $con->prepare($query);
                     $stmt->bindParam(":id", $id);
                     $stmt->bindParam(':user_name', $user_name);
-                    $stmt->bindParam(':user_password', $formatted_password);
+                    if (isset($formatted_password)) {
+                        $stmt->bindParam(':user_password', $formatted_password);
+                    }
                     $stmt->bindParam(':first_name', $first_name);
                     $stmt->bindParam(':last_name', $last_name);
                     $stmt->bindParam(':gender', $gender);
