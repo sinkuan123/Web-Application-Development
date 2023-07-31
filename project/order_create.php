@@ -36,7 +36,20 @@
             $product_id = $_POST["product"];
             $quantity = $_POST["quantity"];
             $customer_id = $_POST['customer'];
-            $selected_product_count = count($_POST['product']);
+
+            $noduplicate = array_unique($product_id);
+
+            if (sizeof($noduplicate) != sizeof($product_id)) {
+                foreach ($product_id as $key => $val) {
+                    if (!array_key_exists($key, $noduplicate)) {
+                        $error[] = "Duplicated products have been chosen " . $products[$val - 1]['name'];
+                        array_splice($product_id, $key, 1);
+                        array_splice($quantity, $key, 1);
+                    }
+                }
+            }
+
+            $selected_product_count = isset($noduplicate) ? count($noduplicate) : count($_POST['product']);
 
             try {
                 if ($customer_id == "") {
@@ -113,20 +126,9 @@
                     </tr>
                     <?php
 
-                    $original = $product_id;
-                    $noduplicate = array_unique($original);
-
                     $product_loop = (!empty($error)) ? $selected_product_count : 1;
                     for ($x = 0; $x < $product_loop; $x++) {
-                        if (sizeof($noduplicate) != sizeof($original)) {
-                            foreach ($original as $key => $val) {
-                                if (!array_key_exists($key, $noduplicate)) {
-                                    array_splice($product_id, $key, 1);
-                                    array_splice($quantity, $key, 1);
-                                }
-                            }
-                            print_r(array_values($noduplicate));
-                        }
+
                     ?>
                         <tr class="pRow">
                             <td class="col-1">
@@ -137,14 +139,14 @@
                                     <option value="">Choose a Product</option>
                                     <?php
                                     for ($i = 0; $i < count($products); $i++) {
-                                        $product_selected = isset($_POST["product"]) && $products[$i]['id'] == $_POST["product"][$x] ? "selected" : "";
+                                        $product_selected = isset($_POST["product"]) && $products[$i]['id'] == $product_id[$x] ? "selected" : "";
                                         echo "<option value='{$products[$i]['id']}' $product_selected>{$products[$i]['name']}</option>";
                                     }
                                     ?>
                                 </select>
                             </td>
                             <td>
-                                <input type="number" class="form-control" name="quantity[]" id="quantity" value="<?php echo isset($_POST['quantity']) ? $_POST['quantity'][$x] : 1; ?>">
+                                <input type="number" class="form-control" name="quantity[]" id="quantity" value="<?php echo isset($_POST['quantity']) ? $quantity[$x] : 1; ?>">
 
                             </td>
                             <td>
