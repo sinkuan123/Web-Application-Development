@@ -42,12 +42,13 @@
             if (sizeof($noduplicate) != sizeof($product_id)) {
                 foreach ($product_id as $key => $val) {
                     if (!array_key_exists($key, $noduplicate)) {
-                        $error[] = "Duplicated products have been chosen " . $products[$val - 1]['name'];
-                        array_splice($product_id, $key, 1);
-                        array_splice($quantity, $key, 1);
+                        $error[] = "Duplicated products have been chosen " . $products[$val - 1]['name'] . ".";
+                        unset($quantity[$key]);
                     }
                 }
             }
+            $product_id = array_values($noduplicate);
+            $quantity = (array_values($quantity));
 
             $selected_product_count = isset($noduplicate) ? count($noduplicate) : count($_POST['product']);
 
