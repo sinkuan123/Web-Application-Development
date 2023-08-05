@@ -16,6 +16,9 @@
             <h1>Create Order</h1>
         </div>
         <?php
+
+        $order_id = isset($_GET['order_id']) ? $_GET['order_id'] : die('ERROR: Record ID not found.');
+
         include 'config/database.php';
 
         $customer_query = "SELECT customer_id, user_name FROM customers";
@@ -28,12 +31,22 @@
         $product_stmt->execute();
         $products = $product_stmt->fetchAll(PDO::FETCH_ASSOC);
 
+        $order_summary_query = "SELECT * FROM order_summary WHERE order_id=:id";
+        $order_summary_stmt = $con->prepare($order_summary_query);
+        $order_summary_stmt->bindParam(":id", $order_id);
+        $order_summary_stmt->execute();
+        $order_summaries = $order_summary_stmt->fetch(PDO::FETCH_ASSOC);
+
+        $order_detail_query = "SELECT * FROM order_detail WHERE order_id=:order_id";
+        $order_detail_stmt = $con->prepare($order_detail_query);
+        $order_detail_stmt->bindParam(":order_id", $order_id);
+        $order_detail_stmt->execute();
+        $order_details = $order_detail_stmt->fetchAll(PDO::FETCH_ASSOC);
+
         $error = array();
         if ($_POST) {
-
             $product_id = $_POST["product"];
             $quantity = $_POST["quantity"];
-            $customer_id = $_POST['customer'];
 
             $noduplicate = array_unique($product_id);
 
@@ -48,12 +61,12 @@
             $product_id = array_values($noduplicate);
             $quantity = array_values($quantity);
 
-            $selected_product_count = isset($noduplicate) ? count($noduplicate) : count($_POST['product']);
+            print_r($product_id);
+            print_r($quantity);
+
+            $selected_product_count = isset($noduplicate) ? count($noduplicate) : count($order_details);
 
             try {
-                if ($customer_id == "") {
-                    $error[] = "Please choose your user name.";
-                }
 
                 if (isset($selected_product_count)) {
                     for ($i = 0; $i < $selected_product_count; $i++) {
@@ -76,26 +89,21 @@
                     }
                     echo "</div>";
                 } else {
-                    $customer_id = $_POST['customer'];
                     date_default_timezone_set('Asia/Kuala_Lumpur');
                     $order_date = date('Y-m-d H:i:s');
+                    $delete_details_query = "DELETE FROM order_detail WHERE order_id=:order_id";
+                    $delete_details_stmt = $con->prepare($delete_details_query);
+                    $delete_details_stmt->bindParam(":order_id", $order_id);
+                    $delete_details_stmt->execute();
 
-                    $order_summary_query = "INSERT INTO order_summary SET customer_id=:customer_id, order_date=:order_date";
-                    $order_summary_stmt = $con->prepare($order_summary_query);
-                    $order_summary_stmt->bindParam(":customer_id", $customer_id);
-                    $order_summary_stmt->bindParam(":order_date", $order_date);
-                    $order_summary_stmt->execute();
-
-                    $order_id = $con->lastInsertId(); //Get the order_id from last inserted row.
-
+                    // Insert updated order details into the database
                     for ($i = 0; $i < $selected_product_count; $i++) {
-
-                        $order_detail_query = "INSERT INTO order_detail SET order_id=:order_id, product_id=:product_id, quantity=:quantity";
-                        $order_detail_stmt = $con->prepare($order_detail_query);
-                        $order_detail_stmt->bindParam(":order_id", $order_id);
-                        $order_detail_stmt->bindParam(":product_id", $product_id[$i]);
-                        $order_detail_stmt->bindParam(":quantity", $quantity[$i]);
-                        $order_detail_stmt->execute();
+                        $order_details_query = "INSERT INTO order_detail SET order_id=:order_id, product_id=:product_id, quantity=:quantity";
+                        $order_details_stmt = $con->prepare($order_details_query);
+                        $order_details_stmt->bindParam(":order_id", $order_id);
+                        $order_details_stmt->bindParam(":product_id", $product_id[$i]);
+                        $order_details_stmt->bindParam(":quantity", $quantity[$i]);
+                        $order_details_stmt->execute();
                     }
                     echo "<div class='alert alert-success' role='alert'>Order Placed Successfully.</div>";
                     $_POST = array();
@@ -107,15 +115,7 @@
         ?>
         <div>
             <form action="" method="post">
-                <select name="customer" id="customer" class="form-select w-50 my-4">
-                    <option value="">Choose your name</option>
-                    <?php
-                    for ($x = 0; $x < count($customers); $x++) {
-                        $customer_selected = isset($_POST["customer"]) && $customers[$x]['customer_id'] == $_POST["customer"] ? "selected" : "";
-                        echo "<option value='{$customers[$x]['customer_id']}' $customer_selected>{$customers[$x]['user_name']}</option>";
-                    }
-                    ?>
-                </select>
+                <input type="text" class="form-control-lg" value="<?php echo $customers[$order_summaries['customer_id']]['user_name'] ?>">
                 <table class="table table-hover table-responsive table-bordered" id="row_del">
                     <tr>
                         <th>NO.</th>
@@ -125,7 +125,7 @@
                     </tr>
                     <?php
 
-                    $product_loop = (!empty($error)) ? $selected_product_count : 1;
+                    $product_loop = empty($error) ? count($order_details) : count($noduplicate);
                     for ($x = 0; $x < $product_loop; $x++) {
 
                     ?>
@@ -138,14 +138,14 @@
                                     <option value="">Choose a Product</option>
                                     <?php
                                     for ($i = 0; $i < count($products); $i++) {
-                                        $product_selected = isset($_POST["product"]) && $products[$i]['id'] == $product_id[$x] ? "selected" : "";
+                                        $product_selected = $products[$i]['id'] == $order_details[$x]['product_id'] ? "selected" : "";
                                         echo "<option value='{$products[$i]['id']}' $product_selected>{$products[$i]['name']}</option>";
                                     }
                                     ?>
                                 </select>
                             </td>
                             <td>
-                                <input type="number" class="form-control" name="quantity[]" id="quantity" value="<?php echo isset($_POST['quantity']) ? $quantity[$x] : 1; ?>">
+                                <input type="number" class="form-control" name="quantity[]" id="quantity" value="<?php echo $order_details[$x]['quantity'] ?>">
 
                             </td>
                             <td>

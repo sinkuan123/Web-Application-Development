@@ -65,6 +65,7 @@
             echo "<th class='col-1'>Order ID</th>";
             echo "<th>Customer Name</th>";
             echo "<th>Order Date</th>";
+            echo "<th>Action</th>";
             echo "</tr>";
 
             // table body will be here
@@ -74,6 +75,7 @@
                 echo "<td>{$order_id}</td>";
                 echo "<td>{$user_name}</td>";
                 echo "<td>{$order_date}</td>";
+                echo "<td><a href='order_update.php?order_id={$order_id}' class='btn btn-primary m-r-1em mx-2'>Edit</a><td>";
             }
 
 
