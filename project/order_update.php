@@ -13,7 +13,7 @@
     <div class="container">
         <?php include 'menu.php' ?>
         <div class="page-header">
-            <h1>Create Order</h1>
+            <h1>Edit Order</h1>
         </div>
         <?php
 
@@ -60,9 +60,6 @@
             }
             $product_id = array_values($noduplicate);
             $quantity = array_values($quantity);
-
-            print_r($product_id);
-            print_r($quantity);
 
             $selected_product_count = isset($noduplicate) ? count($noduplicate) : count($order_details);
 
@@ -115,7 +112,7 @@
         ?>
         <div>
             <form action="" method="post">
-                <input type="text" class="form-control-lg" value="<?php echo $customers[$order_summaries['customer_id']]['user_name'] ?>">
+                <input type="text" class="form-control-lg" value="<?php echo $customers[$order_summaries['customer_id'] - 1]['user_name'] ?>">
                 <table class="table table-hover table-responsive table-bordered" id="row_del">
                     <tr>
                         <th>NO.</th>
@@ -164,8 +161,8 @@
                 </table>
 
                 <div class="text-center">
-                    <button type="submit" class="btn btn-primary">Place Order</button>
-                    <a href="" class="btn btn-danger">Back to Read Order Summary</a>
+                    <button type="submit" class="btn btn-primary">Update Order</button>
+                    <a href="order_read.php" class="btn btn-danger">Back to Read Order Summary</a>
                 </div>
             </form>
             <script>
