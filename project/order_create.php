@@ -98,6 +98,7 @@
                         $order_detail_stmt->execute();
                     }
                     echo "<div class='alert alert-success' role='alert'>Order Placed Successfully.</div>";
+                    header("Location: http://localhost/wap/project/order_detail_read.php?order_id={$order_id}");
                     $_POST = array();
                 }
             } catch (PDOException $exception) {

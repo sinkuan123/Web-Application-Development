@@ -75,7 +75,10 @@
                 echo "<td>{$order_id}</td>";
                 echo "<td>{$user_name}</td>";
                 echo "<td>{$order_date}</td>";
-                echo "<td><a href='order_update.php?order_id={$order_id}' class='btn btn-primary m-r-1em mx-2'>Edit</a><td>";
+                echo "<td>
+                <a href='order_detail_read.php?order_id={$order_id}' class='btn btn-info m-r-1em mx-2'>Read</a>
+                <a href='order_update.php?order_id={$order_id}' class='btn btn-primary m-r-1em mx-2'>Edit</a>
+                <a href='#' onclick='delete_order({$order_id});'  class='btn btn-danger mx-2'>Delete</a><td>";
             }
 
 

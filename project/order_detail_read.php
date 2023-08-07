@@ -15,84 +15,94 @@
         <div class="page-header">
             <h1>Read Order Detail</h1>
         </div>
-
         <?php
-        // include database connection
+
+        $order_id = isset($_GET['order_id']) ? $_GET['order_id'] : die('ERROR: Record ID not found.');
+
         include 'config/database.php';
 
-        // delete message prompt will be here
-        $search = isset($_GET['search']) ? $_GET['search'] : '';
+        $customer_query = "SELECT * FROM customers";
+        $customer_stmt = $con->prepare($customer_query);
+        $customer_stmt->execute();
+        $customers = $customer_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // select all data
-        $query = "SELECT order_detail.order_detail_id, order_detail.order_id, products.name, order_detail.quantity FROM order_detail INNER JOIN products ON products.id=order_detail.product_id";
-        if (!empty($search)) {
-            $query .= " WHERE order_id LIKE :search OR order_detail_id LIKE :search OR quantity LIKE :search OR name LIKE :search";
-            $search = "%{$search}%";
-        }
+        $product_query = "SELECT * FROM products";
+        $product_stmt = $con->prepare($product_query);
+        $product_stmt->execute();
+        $products = $product_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        $query .= " ORDER BY order_detail_id ASC";
+        $order_summary_query = "SELECT * FROM order_summary WHERE order_id=:id";
+        $order_summary_stmt = $con->prepare($order_summary_query);
+        $order_summary_stmt->bindParam(":id", $order_id);
+        $order_summary_stmt->execute();
+        $order_summaries = $order_summary_stmt->fetch(PDO::FETCH_ASSOC);
 
-        $stmt = $con->prepare($query);
+        $order_detail_query = "SELECT * FROM order_detail WHERE order_id=:order_id";
+        $order_detail_stmt = $con->prepare($order_detail_query);
+        $order_detail_stmt->bindParam(":order_id", $order_id);
+        $order_detail_stmt->execute();
+        $order_details = $order_detail_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        if (!empty($search)) {
-            $stmt->bindParam(':search', $search);
-        }
-
-        $stmt->execute();
-
-        // this is how to get number of rows returned
-        $num = $stmt->rowCount();
-
-        // link to create record form
-        ?><div class="d-flex justify-content-between align-items-center">
-            <div><a href='order_create.php' class='btn btn-primary m-b-1em'>Create New Order</a></div>
-            <div class="w-50">
-                <form method="GET" action="" class="mb-3">
-                    <div class="input-group">
-                        <input type="text" name="search" class="form-control" placeholder="Search by name" value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>">
-                        <button type="submit" class="btn btn-primary">Search</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <?php //check if more than 0 record found
-        if ($num > 0) {
-            echo "<table class='table table-hover table-responsive table-bordered'>"; //start table
-
-            //creating our table heading
-            echo "<tr>";
-            echo "<th class='col-1'>Order Detail ID</th>";
-            echo "<th class='col-1'>Order ID</th>";
-            echo "<th>Product Name</th>";
-            echo "<th>Quantity</th>";
-            echo "</tr>";
-
-            // table body will be here
-            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                extract($row);
-                echo "<tr>";
-                echo "<td>{$order_detail_id}</td>";
-                echo "<td>{$order_id}</td>";
-                echo "<td>{$name}</td>";
-                echo "<td>{$quantity}</td>";
-            }
-            // end table
-            echo "</table>";
-
-            // data from database will be here
-
-        } else {
-            echo "<div class='alert alert-danger'>No records found.</div>";
-        }
+        $total_amount = 0;
         ?>
-        <!-- PHP code to read records will be here -->
+        <div>
+            <form action="" method="post">
+                <div class="d-flex justify-content-between m-4">
+                    <h5>Ordered By: <?php echo $customers[$order_summaries['customer_id'] - 1]['first_name'] . " " . $customers[$order_summaries['customer_id'] - 1]['last_name'] ?></h5>
+                    <h5>Order Date and Time: <?php echo $order_summaries['order_date'] ?></h5>
+                </div>
 
+                <table class="table table-hover table-responsive table-bordered" id="row_del">
+                    <tr>
+                        <th>NO.</th>
+                        <th class="col-6">Product</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Amount</th>
+                    </tr>
+                    <?php
+
+                    $product_loop = count($order_details);
+                    for ($x = 0; $x < $product_loop; $x++) {
+
+                    ?>
+                        <tr class="pRow">
+                            <td class="col-1">
+                                <?php echo $x + 1; ?>
+                            </td>
+                            <td>
+                                <?php echo $products[$order_details[$x]['product_id'] - 1]['name'] ?>
+                            </td>
+                            <?php
+                            if ($products[$order_details[$x]['product_id'] - 1]['promotion_price'] != 0) {
+                                echo "<td class='d-flex justify-content-end'><p class='me-1 text-decoration-line-through''> RM" . number_format((float)$products[$order_details[$x]['product_id'] - 1]['price'], 2, '.', '') . "</p><p > RM"  . number_format((float)$products[$order_details[$x]['product_id'] - 1]['promotion_price'], 2, '.', '') .  "</p></td>";
+                            } else {
+                                echo "<td class='text-end'> RM" . number_format((float)$products[$order_details[$x]['product_id'] - 1]['price'], 2, '.', '') . "</td>";
+                            } ?>
+                            <td>
+                                <p class="text-end"><?php echo $order_details[$x]['quantity'] ?></p>
+                            </td>
+                            <td>
+                                <?php $amount =  ($products[$order_details[$x]['product_id'] - 1]['promotion_price'] != 0) ?  $products[$order_details[$x]['product_id'] - 1]['promotion_price'] * $order_details[$x]['quantity'] : $products[$order_details[$x]['product_id'] - 1]['price'] * $order_details[$x]['quantity'];
+
+                                $total_amount += $amount;
+                                echo "<p class='text-end'>RM" . number_format((float)$amount, 2, '.', '') . "</p>" ?>
+                            </td>
+                        </tr>
+                    <?php }
+                    ?>
+                </table>
+                <h2 class="text-end">Total Amount: RM<?php echo number_format((float)$total_amount, 2, '.', ''); ?></h2>
+
+                <div class="text-center">
+                    <a href="order_read.php" class="btn btn-danger">Back to Read Order Summary</a>
+                </div>
+            </form>
+        </div>
     </div> <!-- end .container -->
 
     <!-- confirm delete record will be here -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
-
 </body>
 
 </html>
