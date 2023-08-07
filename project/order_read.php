@@ -1,3 +1,4 @@
+<?php include "validatelogin.php"; ?>
 <!DOCTYPE HTML>
 <html>
 
@@ -24,7 +25,7 @@
         $search = isset($_GET['search']) ? $_GET['search'] : '';
 
         // select all data
-        $query = "SELECT order_summary.order_id, order_summary.customer_id, order_summary.order_date, customers.user_name FROM order_summary INNER JOIN customers ON customers.customer_id=order_summary.customer_id";
+        $query = "SELECT order_summary.order_id, order_summary.customer_id, order_summary.total_amount, order_summary.order_date, customers.first_name, customers.last_name FROM order_summary INNER JOIN customers ON customers.customer_id=order_summary.customer_id";
         if (!empty($search)) {
             $query .= " WHERE order_id LIKE :search OR user_name LIKE :search OR order_date LIKE :search";
             $search = "%{$search}%";
@@ -64,7 +65,8 @@
             echo "<tr>";
             echo "<th class='col-1'>Order ID</th>";
             echo "<th>Customer Name</th>";
-            echo "<th>Order Date</th>";
+            echo "<th>Total Amount</th>";
+            echo "<th>Order Date and Time</th>";
             echo "<th>Action</th>";
             echo "</tr>";
 
@@ -73,7 +75,8 @@
                 extract($row);
                 echo "<tr>";
                 echo "<td>{$order_id}</td>";
-                echo "<td>{$user_name}</td>";
+                echo "<td>{$first_name} {$last_name}</td>";
+                echo "<td>RM {$total_amount}</td>";
                 echo "<td>{$order_date}</td>";
                 echo "<td>
                 <a href='order_detail_read.php?order_id={$order_id}' class='btn btn-info m-r-1em mx-2'>Read</a>

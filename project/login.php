@@ -1,3 +1,11 @@
+<?php
+session_start();
+if (isset($_SESSION['customer_id'])) {
+    header("Location: index.php");
+    exit();
+}
+?>
+
 <!DOCTYPE HTML>
 <html>
 
@@ -31,7 +39,7 @@
                     $password_input_err = "Please enter the Password field";
                 } else {
                     try {
-                        $query = "SELECT user_name, user_password, email, account_status FROM customers WHERE user_name=:user_input OR email=:user_input";
+                        $query = "SELECT * FROM customers WHERE user_name=:user_input OR email=:user_input";
                         $stmt = $con->prepare($query);
                         $stmt->bindParam(':user_input', $user_input);
                         $stmt->execute();
@@ -40,7 +48,7 @@
                         if ($row) {
                             if (password_verify($password_input, $row['user_password'])) {
                                 if ($row['account_status'] == 'Active') {
-                                    header("Location: index.php");
+                                    $_SESSION['customer_id'] = $row['customer_id'];
                                     exit();
                                 } else {
                                     $error = "Inactive account.";

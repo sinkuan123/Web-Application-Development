@@ -1,3 +1,4 @@
+<?php include "validatelogin.php"; ?>
 <!DOCTYPE HTML>
 <html>
 
@@ -21,12 +22,12 @@
 
         include 'config/database.php';
 
-        $customer_query = "SELECT customer_id, user_name FROM customers";
+        $customer_query = "SELECT * FROM customers";
         $customer_stmt = $con->prepare($customer_query);
         $customer_stmt->execute();
         $customers = $customer_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        $product_query = "SELECT id, name FROM products";
+        $product_query = "SELECT * FROM products";
         $product_stmt = $con->prepare($product_query);
         $product_stmt->execute();
         $products = $product_stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -88,6 +89,20 @@
                 } else {
                     date_default_timezone_set('Asia/Kuala_Lumpur');
                     $order_date = date('Y-m-d H:i:s');
+                    $total_amount = 0;
+                    for ($x = 0; $x < $selected_product_count; $x++) {
+                        $amount =  ($products[$product_id[$x] - 1]['promotion_price'] != 0) ?  $products[$product_id[$x] - 1]['promotion_price'] * $quantity[$x] : $products[$product_id[$x] - 1]['price'] * $quantity[$x];
+
+                        $total_amount += $amount;
+                    }
+
+                    $update_order_summary_query = "UPDATE order_summary SET total_amount=:total_amount, order_date=:order_date WHERE order_id=:order_id";
+                    $update_order_summary_stmt = $con->prepare($update_order_summary_query);
+                    $update_order_summary_stmt->bindParam(":order_id", $order_id);
+                    $update_order_summary_stmt->bindParam(":total_amount", $total_amount);
+                    $update_order_summary_stmt->bindParam(":order_date", $order_date);
+                    $update_order_summary_stmt->execute();
+
                     $delete_details_query = "DELETE FROM order_detail WHERE order_id=:order_id";
                     $delete_details_stmt = $con->prepare($delete_details_query);
                     $delete_details_stmt->bindParam(":order_id", $order_id);
@@ -102,7 +117,8 @@
                         $order_details_stmt->bindParam(":quantity", $quantity[$i]);
                         $order_details_stmt->execute();
                     }
-                    echo "<div class='alert alert-success' role='alert'>Order Placed Successfully.</div>";
+                    echo "<div class='alert alert-success' role='alert'>Order Update Successfully.</div>";
+                    header("Location: order_detail_read.php?order_id={$order_id}");
                     $_POST = array();
                 }
             } catch (PDOException $exception) {
@@ -112,7 +128,10 @@
         ?>
         <div>
             <form action="" method="post">
-                <input type="text" class="form-control-lg" value="<?php echo $customers[$order_summaries['customer_id'] - 1]['user_name'] ?>">
+                <div class="d-flex justify-content-between m-4">
+                    <h5>Ordered By: <?php echo $customers[$order_summaries['customer_id'] - 1]['first_name'] . " " . $customers[$order_summaries['customer_id'] - 1]['last_name'] ?></h5>
+                    <h5>Order Date and Time: <?php echo $order_summaries['order_date'] ?></h5>
+                </div>
                 <table class="table table-hover table-responsive table-bordered" id="row_del">
                     <tr>
                         <th>NO.</th>

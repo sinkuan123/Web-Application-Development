@@ -1,3 +1,4 @@
+<?php include "validatelogin.php"; ?>
 <!DOCTYPE HTML>
 <html>
 
@@ -12,7 +13,7 @@
     <!-- container -->
     <div class="container">
         <?php include 'menu.php' ?>
-        <div class="page-header">
+        <div class="page-header p-3">
             <h1>Read Order Detail</h1>
         </div>
         <?php
@@ -55,8 +56,8 @@
                 <table class="table table-hover table-responsive table-bordered" id="row_del">
                     <tr>
                         <th>NO.</th>
-                        <th class="col-6">Product</th>
-                        <th>Price</th>
+                        <th class="col-8">Product</th>
+                        <th>Price (RM/Unit)</th>
                         <th>Quantity</th>
                         <th>Amount</th>
                     </tr>

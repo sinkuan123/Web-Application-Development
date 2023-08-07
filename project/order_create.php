@@ -1,3 +1,4 @@
+<?php include "validatelogin.php"; ?>
 <!DOCTYPE HTML>
 <html>
 
@@ -23,7 +24,7 @@
         $customer_stmt->execute();
         $customers = $customer_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        $product_query = "SELECT id, name FROM products";
+        $product_query = "SELECT * FROM products";
         $product_stmt = $con->prepare($product_query);
         $product_stmt->execute();
         $products = $product_stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -47,6 +48,7 @@
             }
             $product_id = array_values($noduplicate);
             $quantity = array_values($quantity);
+
 
             $selected_product_count = isset($noduplicate) ? count($noduplicate) : count($_POST['product']);
 
@@ -79,17 +81,23 @@
                     $customer_id = $_POST['customer'];
                     date_default_timezone_set('Asia/Kuala_Lumpur');
                     $order_date = date('Y-m-d H:i:s');
+                    $total_amount = 0;
+                    for ($x = 0; $x < $selected_product_count; $x++) {
+                        $amount =  ($products[$product_id[$x] - 1]['promotion_price'] != 0) ?  $products[$product_id[$x] - 1]['promotion_price'] * $quantity[$x] : $products[$product_id[$x] - 1]['price'] * $quantity[$x];
 
-                    $order_summary_query = "INSERT INTO order_summary SET customer_id=:customer_id, order_date=:order_date";
+                        $total_amount += $amount;
+                    }
+
+                    $order_summary_query = "INSERT INTO order_summary SET customer_id=:customer_id, total_amount=:total_amount, order_date=:order_date";
                     $order_summary_stmt = $con->prepare($order_summary_query);
                     $order_summary_stmt->bindParam(":customer_id", $customer_id);
+                    $order_summary_stmt->bindParam(":total_amount", $total_amount);
                     $order_summary_stmt->bindParam(":order_date", $order_date);
                     $order_summary_stmt->execute();
 
                     $order_id = $con->lastInsertId(); //Get the order_id from last inserted row.
 
                     for ($i = 0; $i < $selected_product_count; $i++) {
-
                         $order_detail_query = "INSERT INTO order_detail SET order_id=:order_id, product_id=:product_id, quantity=:quantity";
                         $order_detail_stmt = $con->prepare($order_detail_query);
                         $order_detail_stmt->bindParam(":order_id", $order_id);
@@ -98,7 +106,7 @@
                         $order_detail_stmt->execute();
                     }
                     echo "<div class='alert alert-success' role='alert'>Order Placed Successfully.</div>";
-                    header("Location: http://localhost/wap/project/order_detail_read.php?order_id={$order_id}");
+                    header("Location: order_detail_read.php?order_id={$order_id}");
                     $_POST = array();
                 }
             } catch (PDOException $exception) {
@@ -153,7 +161,8 @@
                                 <input href='#' onclick='deleteRow(this)' class='btn d-flex justify-content-center btn-danger mt-1' readonly value="Delete" />
                             </td>
                         </tr>
-                    <?php }
+                    <?php
+                    }
                     ?>
                     <tr>
                         <td></td>

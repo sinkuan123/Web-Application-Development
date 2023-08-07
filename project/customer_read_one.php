@@ -1,3 +1,4 @@
+<?php include "validatelogin.php"; ?>
 <!DOCTYPE HTML>
 <html>
 
