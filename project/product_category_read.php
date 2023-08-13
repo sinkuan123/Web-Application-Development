@@ -22,6 +22,17 @@
         include 'config/database.php';
 
         // delete message prompt will be here
+        $action = isset($_GET['action']) ? $_GET['action'] : "";
+
+        // if it was redirected from delete.php
+        if ($action == 'deleted') {
+            echo "<div class='alert alert-success'>Record was deleted.</div>";
+        }
+
+        if ($action == 'failed') {
+            echo "<div class='alert alert-danger'>There are products inside this Category.</div>";
+        }
+
         $search = isset($_GET['search']) ? $_GET['search'] : '';
 
         // select all data
@@ -66,6 +77,7 @@
             echo "<th>ID</th>";
             echo "<th>Category Name</th>";
             echo "<th>Description</th>";
+            echo "<th>Action</th>";
             echo "</tr>";
 
             // table body will be here
@@ -75,15 +87,21 @@
                 echo "<td>{$id}</td>";
                 echo "<td>{$category_name}</td>";
                 echo "<td class='col-9'>{$description}</td>";
+                echo "<td class='col-3 text-center'>";
+                // read one record
+                echo "<a href='product_category_read_one.php?id={$id}' class='btn btn-info m-r-1em mx-2'>Read</a>";
+
+                // we will use this links on next part of this post
+                echo "<a href='product_category_update.php?id={$id}' class='btn btn-primary m-r-1em mx-2'>Edit</a>";
+
+                // we will use this links on next part of this post
+                echo "<a href='#' onclick='delete_product_category({$id});'  class='btn btn-danger mx-2'>Delete</a>";
+                echo "</td>";
                 echo "</tr>";
             }
-
-
             // end table
             echo "</table>";
-
             // data from database will be here
-
         } else {
             echo "<div class='alert alert-danger'>No records found.</div>";
         }
@@ -97,6 +115,18 @@
     </div> <!-- end .container -->
 
     <!-- confirm delete record will be here -->
+    <script type='text/javascript'>
+        // confirm record deletion
+        function delete_product_category(id) {
+
+            if (confirm('Are you sure?')) {
+                // if user clicked ok,
+                // pass the id to delete.php and execute the delete query
+                window.location = 'product_category_delete.php?id=' + id;
+            }
+        }
+    </script>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
 
 </body>

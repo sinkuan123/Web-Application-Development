@@ -10,18 +10,17 @@
 <body>
     <?php
     include 'config/database.php';
-    $order_query = "SELECT order_id, product_id
-    FROM order_detail;
-    ";
-    $order_stmt = $con->prepare($order_query);
-    $order_stmt->execute();
-    $orders = $order_stmt->fetch(PDO::FETCH_ASSOC);
-    extract($orders);
-    while ($nunm > 0) {
-        echo $order_id;
-        echo $product_id;
-        var_dump($orders);
+    $product_exist_query = "SELECT id FROM products WHERE EXISTS (SELECT product_id FROM order_detail WHERE order_detail.product_id = products.id)";
+    $product_exist_stmt = $con->prepare($product_exist_query);
+    $product_exist_stmt->execute();
+    $products = $product_exist_stmt->fetchAll(PDO::FETCH_ASSOC);
+    var_dump($products);
+
+    for ($i = 0; $i < count($products); $i++) {
+        echo $products[$i]['id'];
     }
+
+
     ?>
 </body>
 

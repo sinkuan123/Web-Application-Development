@@ -22,6 +22,13 @@
         include 'config/database.php';
 
         // delete message prompt will be here
+        $action = isset($_GET['action']) ? $_GET['action'] : "";
+
+        // if it was redirected from delete.php
+        if ($action == 'deleted') {
+            echo "<div class='alert alert-success'>Record was deleted.</div>";
+        }
+
         $search = isset($_GET['search']) ? $_GET['search'] : '';
 
         // select all data
@@ -64,7 +71,7 @@
             //creating our table heading
             echo "<tr>";
             echo "<th class='col-1'>Order ID</th>";
-            echo "<th>Customer Name</th>";
+            echo "<th class='col-5'>Customer Name</th>";
             echo "<th>Total Amount</th>";
             echo "<th>Order Date and Time</th>";
             echo "<th>Action</th>";
@@ -76,12 +83,12 @@
                 echo "<tr>";
                 echo "<td>{$order_id}</td>";
                 echo "<td>{$first_name} {$last_name}</td>";
-                echo "<td>RM {$total_amount}</td>";
+                echo "<td class='text-end'>RM {$total_amount}</td>";
                 echo "<td>{$order_date}</td>";
                 echo "<td>
                 <a href='order_detail_read.php?order_id={$order_id}' class='btn btn-info m-r-1em mx-2'>Read</a>
                 <a href='order_update.php?order_id={$order_id}' class='btn btn-primary m-r-1em mx-2'>Edit</a>
-                <a href='#' onclick='delete_order({$order_id});'  class='btn btn-danger mx-2'>Delete</a><td>";
+                <a href='#' onclick='delete_order({$order_id});'  class='btn btn-danger mx-2'>Delete</a></td>";
             }
 
 
@@ -103,6 +110,17 @@
     </div> <!-- end .container -->
 
     <!-- confirm delete record will be here -->
+    <script type='text/javascript'>
+        // confirm record deletion
+        function delete_order(id) {
+
+            if (confirm('Are you sure?')) {
+                // if user clicked ok,
+                // pass the id to delete.php and execute the delete query
+                window.location = 'order_delete.php?id=' + id;
+            }
+        }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
 
 </body>

@@ -19,7 +19,7 @@
         <?php
         include 'config/database.php';
 
-        $customer_query = "SELECT customer_id, user_name FROM customers";
+        $customer_query = "SELECT customer_id, user_name FROM customers order by customer_id ASC";
         $customer_stmt = $con->prepare($customer_query);
         $customer_stmt->execute();
         $customers = $customer_stmt->fetchAll(PDO::FETCH_ASSOC);

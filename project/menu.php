@@ -5,6 +5,7 @@ if (isset($_GET['logout'])) {
     exit();
 }
 ?>
+
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark fs-5">
     <div class="container">
         <ul class="navbar-nav mx-auto">

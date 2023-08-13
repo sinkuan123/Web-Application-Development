@@ -22,7 +22,7 @@
 
         include 'config/database.php';
 
-        $customer_query = "SELECT * FROM customers";
+        $customer_query = "SELECT * FROM customers order by customer_id ASC";
         $customer_stmt = $con->prepare($customer_query);
         $customer_stmt->execute();
         $customers = $customer_stmt->fetchAll(PDO::FETCH_ASSOC);
