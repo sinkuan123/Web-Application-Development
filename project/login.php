@@ -25,15 +25,14 @@ if (isset($_SESSION['customer_id'])) {
         <div>
             <?php
 
+            $action = isset($_GET['action']) ? $_GET['action'] : "";
+            if ($action == "warning") {
+                echo "<div class='alert alert-danger m-3'>Please login to your account first.</div>";
+            }
+
             if ($_POST) {
                 // include database connection
                 include 'config/database.php';
-
-                $action = isset($_GET['action']) ? $_GET['action'] : "";
-                if ($action == 'warning') {
-                    echo "<div class='alert alert-danger m-3'>Please login to your account first.</div>";
-                    return;
-                }
 
                 $user_input = $_POST['user_input'];
                 $password_input = $_POST['password_input'];

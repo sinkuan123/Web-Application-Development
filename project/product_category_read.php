@@ -14,7 +14,7 @@
     <div class="container">
         <?php include 'menu.php' ?>
         <div class="page-header">
-            <h1>Read Products</h1>
+            <h1>Read Product Category</h1>
         </div>
 
         <?php
