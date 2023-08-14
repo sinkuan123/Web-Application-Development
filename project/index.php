@@ -10,14 +10,52 @@
 
 <body>
     <!-- container -->
-    <div class="container p-0 bg-light">
+    <div class="container p-0">
         <?php
         include 'menu.php';
         ?>
-        <div class="font-monospace container col">
-            <h1>No dummy information allowed.</h1>
-            <div class=" container col"> dummy </div>
+        <div class="font-monospace container col mt-3">
+            <h1>Welcome to E-Commerce Website</h1>
+        </div>
+        <?php
+        include "config/database.php";
 
+        $customer_query = "SELECT * FROM customers ORDER BY customer_id ASC";
+        $customer_stmt = $con->prepare($customer_query);
+        $customer_stmt->execute();
+        $customers = $customer_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $product_query = "SELECT * FROM products ORDER BY id ASC";
+        $product_stmt = $con->prepare($product_query);
+        $product_stmt->execute();
+        $products = $product_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $order_summary_query = "SELECT * FROM order_summary ORDER BY order_id ASC";
+        $order_summary_stmt = $con->prepare($order_summary_query);
+        $order_summary_stmt->execute();
+        $order_summaries = $order_summary_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $order_detail_query = "SELECT * FROM order_detail ORDER BY order_id ASC";
+        $order_detail_stmt = $con->prepare($order_detail_query);
+        $order_detail_stmt->execute();
+        $order_details = $order_detail_stmt->fetchAll(PDO::FETCH_ASSOC);
+        ?>
+        <div>
+
+            <div class="container row my-5 justify-content-around">
+                <div class="col-3 border border-3 shadow p-5 text-center">
+                    <h2>Total Number of Customers</h2>
+                    <p class="mt-3 fs-4"><?php echo count($customers); ?></p>
+                </div>
+                <div class="col-3 border border-3 shadow p-5 text-center">
+                    <h2>Total Number of Products</h2>
+                    <p class="mt-3 fs-4"><?php echo count($products); ?></p>
+                </div>
+                <div class="col-3 border border-3 shadow p-5 text-center">
+                    <h2>Total Number of Orders</h2>
+                    <p class="mt-3 fs-4"><?php echo count($order_summaries); ?></p>
+                </div>
+            </div>
         </div>
     </div>
     <!-- end container -->
