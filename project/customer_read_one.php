@@ -28,7 +28,7 @@
         // read current record's data
         try {
             // prepare select query
-            $query = "SELECT customer_id, user_name, first_name, last_name, gender, date_of_birth, registration_date_time, account_status FROM customers WHERE customer_id = :id ";
+            $query = "SELECT customer_id, user_name, first_name, last_name, gender, date_of_birth, registration_date_time, account_status, image FROM customers WHERE customer_id = :id ";
             $stmt = $con->prepare($query);
 
             // Bind the parameter
@@ -48,6 +48,8 @@
             $date_of_birth = $row['date_of_birth'];
             $registration_date_time = $row['registration_date_time'];
             $account_status = $row['account_status'];
+            $image = $row['image'];
+            var_dump($image);
             // shorter way to do that is extract($row)
         }
 
@@ -91,6 +93,16 @@
             <tr>
                 <td>Account Status</td>
                 <td><?php echo htmlspecialchars($account_status, ENT_QUOTES);  ?></td>
+            </tr>
+            <tr>
+                <td>Image</td>
+                <td>
+                    <?php if ($image == "") { ?>
+                        <img src="img/profilepicture.png" alt="">
+                    <?php } else { ?>
+                        <img src="uploads/<?php echo htmlspecialchars($image, ENT_QUOTES); ?>" alt="">
+                    <?php } ?>
+                </td>
             </tr>
             <tr>
                 <td></td>

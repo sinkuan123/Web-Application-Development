@@ -28,7 +28,7 @@
         // read current record's data
         try {
             // prepare select query
-            $query = "SELECT products.id, products.name, products.description, products.promotion_price, products.price, products.manufacture_date, products.expired_date,
+            $query = "SELECT products.id, products.name, products.description, products.promotion_price, products.price, products.manufacture_date, products.expired_date, products.image,
              product_category.category_name FROM products INNER JOIN product_category  ON products.category_id = product_category.id WHERE products.id=:id";
             $stmt = $con->prepare($query);
 
@@ -49,6 +49,7 @@
             $promotion_price = $row['promotion_price'];
             $manufacture_date = $row['manufacture_date'];
             $expired_date = $row['expired_date'];
+            $image = $row['image'];
             // shorter way to do that is extract($row)
         }
 
@@ -92,6 +93,16 @@
             <tr>
                 <td>Expired Date</td>
                 <td><?php echo htmlspecialchars($expired_date, ENT_QUOTES);  ?></td>
+            </tr>
+            <tr>
+                <td>Image</td>
+                <td>
+                    <?php if ($image == "") { ?>
+                        <img src="img/productpicture.png" alt="">
+                    <?php } else { ?>
+                        <img src="uploads/<?php echo htmlspecialchars($image, ENT_QUOTES); ?>" alt="">
+                    <?php } ?>
+                </td>
             </tr>
             <tr>
                 <td></td>

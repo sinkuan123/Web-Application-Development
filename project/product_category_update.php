@@ -65,6 +65,7 @@
                 // bind the parameters
                 $stmt->bindParam(':name', $name);
                 $stmt->bindParam(':description', $description);
+                $stmt->bindParam(":id", $id);
 
                 // Execute the query
                 if ($stmt->execute()) {
@@ -86,24 +87,25 @@
 
         <!-- HTML read one record table will be here -->
         <!--we have our html table here where the record will be displayed-->
-        <table class='table table-hover table-responsive table-bordered my-5'>
-            <tr>
-                <td>Category Name</td>
-                <td><input type='text' name='name' value="<?php echo htmlspecialchars($name, ENT_QUOTES);  ?>" class='form-control' /></td>
-            </tr>
-            <tr>
-                <td>Description</td>
-                <td><textarea name='description' class='form-control'><?php echo htmlspecialchars($description, ENT_QUOTES);  ?></textarea></td>
-            </tr>
-            <tr>
-                <td></td>
-                <td>
-                    <input type='submit' value='Save Changes' class='btn btn-primary' />
-                    <a href='product_category_read.php' class='btn btn-danger'>Back to read product category</a>
-                </td>
-            </tr>
-        </table>
-
+        <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"] . "?id={$id}"); ?>" method="post">
+            <table class='table table-hover table-responsive table-bordered my-5'>
+                <tr>
+                    <td>Category Name</td>
+                    <td><input type='text' name='name' value="<?php echo htmlspecialchars($name, ENT_QUOTES);  ?>" class='form-control' /></td>
+                </tr>
+                <tr>
+                    <td>Description</td>
+                    <td><textarea name='description' class='form-control'><?php echo htmlspecialchars($description, ENT_QUOTES);  ?></textarea></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>
+                        <input type='submit' value='Save Changes' class='btn btn-primary' />
+                        <a href='product_category_read.php' class='btn btn-danger'>Back to read product category</a>
+                    </td>
+                </tr>
+            </table>
+        </form>
 
 
     </div> <!-- end .container -->

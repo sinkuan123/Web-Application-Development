@@ -37,7 +37,7 @@
 
         // select all data
         //inner join method to make query that combine two tables
-        $query = "SELECT products.id, products.name, products.description, products.promotion_price, products.price, product_category.category_name FROM products INNER JOIN product_category  ON products.category_id = product_category.id";
+        $query = "SELECT products.id, products.name, products.description, products.promotion_price, products.price, products.image, product_category.category_name FROM products INNER JOIN product_category  ON products.category_id = product_category.id";
         if (!empty($search)) {
             $query .= " WHERE name LIKE :search";
             $search = "%{$search}%";
@@ -80,6 +80,7 @@
             echo "<th>Category</th>";
             echo "<th>Description</th>";
             echo "<th>Price</th>";
+            echo "<th>Image</th>";
             echo "<th>Action</th>";
             echo "</tr>";
 
@@ -98,6 +99,11 @@
                     echo "<td class='d-flex justify-content-end'><p class='me-1 text-decoration-line-through''>" . number_format((float)$price, 2, '.', '') . "</p><p >"  . number_format((float)$promotion_price, 2, '.', '') .  "</p></td>";
                 } else {
                     echo "<td class='text-end'>" . number_format((float)$price, 2, '.', '') . "</td>";
+                }
+                if ($image == "") {
+                    echo '<td><img src="img/productpicture.png" height="100px" alt=""></td>';
+                } else {
+                    echo '<td><img src="uploads/<?php echo htmlspecialchars($image, ENT_QUOTES); ?>" height="100px" alt=""></td>';
                 }
                 echo "<td class='col-3 text-center'>";
                 // read one record

@@ -24,7 +24,7 @@
             include 'config/database.php';
             try {
                 // insert query
-                $query = "INSERT INTO customers SET user_name=:user_name, user_password=:user_password, first_name=:first_name, last_name=:last_name, gender=:gender, date_of_birth=:date_of_birth,email=:email,  registration_date_time=:registration_date_time, account_status=:account_status";
+                $query = "INSERT INTO customers SET user_name=:user_name, user_password=:user_password, first_name=:first_name, last_name=:last_name, gender=:gender, date_of_birth=:date_of_birth,email=:email,  registration_date_time=:registration_date_time, account_status=:account_status, image=:image";
                 // prepare query for execution
                 $stmt = $con->prepare($query);
                 $user_name = $_POST['user_name'];
@@ -37,11 +37,45 @@
                 $date_of_birth = $_POST['date_of_birth'];
                 $email = $_POST['email'];
                 $account_status = $_POST['account_status'];
+                $image = !empty($_FILES["image"]["name"])
+                    ? sha1_file($_FILES['image']['tmp_name']) . "-" . basename($_FILES["image"]["name"])
+                    : "";
+                $image = htmlspecialchars(strip_tags($image));
                 $usernamePattern = "/^[A-Za-z][A-Za-z0-9_-]{5,}$/";
                 $passwordPattern = "/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{6,}$/";
 
+                $target_directory = "uploads/";
+                $target_file = $target_directory . $image;
+                $file_type = pathinfo($target_file, PATHINFO_EXTENSION);
+
                 $errorMessage = array();
 
+                if ($image) {
+                    //Check whether the size of image isn't square
+                    $image_check = getimagesize($_FILES['image']['tmp_name']);
+                    $image_width = $image_check[0];
+                    $image_height = $image_check[1];
+                    if ($image_width != $image_height) {
+                        $errorMessage[] = "Only square size image allowed.";
+                    }
+                    // make sure submitted file is not too large, can't be larger than 1 MB
+                    if ($_FILES['image']['size'] > (524288)) {
+                        $errorMessage[] = "<div>Image must be less than 512 KB in size.</div>";
+                    }
+                    // make sure that file is a real image
+                    if ($image_check == false) {
+                        $errorMessage[] = "<div>Submitted file is not an image.</div>";
+                    }
+                    // make sure certain file types are allowed
+                    $allowed_file_types = array("jpg", "jpeg", "png", "gif");
+                    if (!in_array($file_type, $allowed_file_types)) {
+                        $errorMessage[] = "<div>Only JPG, JPEG, PNG, GIF files are allowed.</div>";
+                    }
+                    // make sure file does not exist
+                    if (file_exists($target_file)) {
+                        $errorMessage[] = "<div>Image already exists. Try to change file name.</div>";
+                    }
+                }
                 if (empty($user_name)) {
                     $errorMessage[] = "User Name field is empty.";
                 } else if (!preg_match($usernamePattern, $user_name)) {
@@ -100,10 +134,40 @@
                     $stmt->bindParam(':registration_date_time', $registration_date_time);
                     $stmt->bindParam(':email', $email);
                     $stmt->bindParam(':account_status', $account_status);
+                    $stmt->bindParam(':image', $image);
+
 
                     // Execute the query
                     if ($stmt->execute()) {
                         echo "<div class='alert alert-success m-3'>Record was saved.</div>";
+                        if ($image) {
+                            // make sure the 'uploads' folder exists
+                            // if not, create it
+                            if (!is_dir($target_directory)) {
+                                mkdir($target_directory, 0777, true);
+                            }
+                            // if $file_upload_error_messages is still empty
+                            if (empty($file_upload_error_messages)) {
+                                // it means there are no errors, so try to upload the file
+                                if (move_uploaded_file($_FILES["image"]["tmp_name"], $target_file)) {
+                                    // it means photo was uploaded
+                                } else {
+                                    echo "<div class='alert alert-danger'>";
+                                    echo "<div>Unable to upload photo.</div>";
+                                    echo "<div>Update the record to upload photo.</div>";
+                                    echo "</div>";
+                                }
+                            }
+
+                            // if $file_upload_error_messages is NOT empty
+                            else {
+                                // it means there are some errors, so show them to user
+                                echo "<div class='alert alert-danger'>";
+                                echo "<div>{$file_upload_error_messages}</div>";
+                                echo "<div>Update the record to upload photo.</div>";
+                                echo "</div>";
+                            }
+                        }
                         $_POST = array();
                     } else {
                         echo "<div class='alert alert-danger m-3'>Unable to save the record.</div>";
@@ -124,7 +188,7 @@
 
         <div class="p-3">
             <!-- html form here where the product information will be entered -->
-            <form action="<?php echo $_SERVER["PHP_SELF"]; ?>" method="POST">
+            <form action="<?php echo $_SERVER["PHP_SELF"]; ?>" method="POST" enctype="multipart/form-data">
                 <table class='table table-hover table-responsive table-bordered'>
                     <tr>
                         <td>User Name</td>
@@ -173,6 +237,10 @@
                             <label for="inactive">Inactive</label><br>
                         </td>
                         </td>
+                    </tr>
+                    <tr>
+                        <td>Image</td>
+                        <td><input type='file' name='image' class='form-control' accept="image/*" /></td>
                     </tr>
                     <tr>
                         <td></td>

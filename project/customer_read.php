@@ -34,7 +34,7 @@
 
         $search = isset($_GET['search']) ? $_GET['search'] : '';
         // select all data
-        $query = "SELECT customer_id, user_name, first_name, last_name, email, account_status FROM customers";
+        $query = "SELECT customer_id, user_name, first_name, last_name, email, account_status, image FROM customers";
 
         if (!empty($search)) {
             $query .= " WHERE (user_name LIKE :search OR first_name LIKE :search OR last_name LIKE :search OR user_name LIKE :search OR email LIKE :search)";
@@ -55,7 +55,7 @@
         // link to create record form
         ?>
         <div class="d-flex justify-content-between align-items-center">
-            <div><a href='product_create.php' class='btn btn-primary m-b-1em'>Create New Customer</a></div>
+            <div><a href='customer_create.php' class='btn btn-primary m-b-1em'>Create New Customer</a></div>
             <div class="w-50">
                 <form method="GET" action="" class="mb-3">
                     <div class="input-group">
@@ -78,6 +78,7 @@
             echo "<th>Last Name</th>";
             echo "<th>Email</th>";
             echo "<th>Account Status</th>";
+            echo "<th>Image</th>";
             echo "<th>Action</th>";
             echo "</tr>";
 
@@ -89,11 +90,17 @@
                 // creating new table row per record
                 echo "<tr>";
                 echo "<td>{$customer_id}</td>";
-                echo "<td class='col-4'>{$user_name}</td>";
+                echo "<td>{$user_name}</td>";
                 echo "<td>{$first_name}</td>";
                 echo "<td>{$last_name}</td>";
                 echo "<td>{$email}</td>";
                 echo "<td>{$account_status}</td>";
+
+                if ($image == "") {
+                    echo '<td><img src="img/profilepicture.png" height="100px" alt=""></td>';
+                } else {
+                    echo '<td><img src="uploads/<?php echo htmlspecialchars($image, ENT_QUOTES); ?>" height="100px" alt=""></td>';
+                }
                 echo "<td class='text-center'>";
                 // read one record
                 echo "<a href='customer_read_one.php?id={$customer_id}' class='btn btn-info m-r-1em mx-1'>Read</a>";

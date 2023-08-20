@@ -25,22 +25,61 @@
             include 'config/database.php';
             try {
                 // insert query
-                $query = "INSERT INTO products SET name=:name, category_id=:category_id, description=:description, price=:price, promotion_price=:promotion_price, manufacture_date=:manufacture_date, expired_date=:expired_date, created=:created";
+                $query = "INSERT INTO products SET name=:name, category_id=:category_id, description=:description, price=:price, promotion_price=:promotion_price, manufacture_date=:manufacture_date, expired_date=:expired_date, image=:image, created=:created";
                 // prepare query for execution
                 $stmt = $con->prepare($query);
                 $name = $_POST['name'];
                 $category_id = $_POST['category_id'];
                 $description = $_POST['description'];
                 $price = $_POST['price'];
+                // new 'image' field
+                $image = !empty($_FILES["image"]["name"])
+                    ? sha1_file($_FILES['image']['tmp_name']) . "-" . basename($_FILES["image"]["name"])
+                    : "";
+                $image = htmlspecialchars(strip_tags($image));
+
                 $promotion_price = $_POST['promotion_price'];
                 $manufacture_date = $_POST['manufacture_date'];
                 $expired_date = $_POST['expired_date'];
+
 
                 //Datetime objects
                 $dateStart = new DateTime($manufacture_date);
                 $dateEnd = new DateTime($expired_date);
 
+                // upload to file to folder
+                $target_directory = "uploads/";
+                $target_file = $target_directory . $image;
+                $file_type = pathinfo($target_file, PATHINFO_EXTENSION);
+
                 $errorMessage = array();
+
+                if ($image) {
+                    //Check whether the size of image isn't square
+                    $image_check = getimagesize($_FILES['image']['tmp_name']);
+                    $image_width = $image_check[0];
+                    $image_height = $image_check[1];
+                    if ($image_width != $image_height) {
+                        $errorMessage[] = "Only square size image allowed.";
+                    }
+                    // make sure submitted file is not too large, can't be larger than 1 MB
+                    if ($_FILES['image']['size'] > (524288)) {
+                        $errorMessage[] = "<div>Image must be less than 512 KB in size.</div>";
+                    }
+                    // make sure that file is a real image
+                    if ($image_check == false) {
+                        $errorMessage[] = "<div>Submitted file is not an image.</div>";
+                    }
+                    // make sure certain file types are allowed
+                    $allowed_file_types = array("jpg", "jpeg", "png", "gif");
+                    if (!in_array($file_type, $allowed_file_types)) {
+                        $errorMessage[] = "<div>Only JPG, JPEG, PNG, GIF files are allowed.</div>";
+                    }
+                    // make sure file does not exist
+                    if (file_exists($target_file)) {
+                        $errorMessage[] = "<div>Image already exists. Try to change file name.</div>";
+                    }
+                }
 
                 if (empty($name)) {
                     $errorMessage[] = "Name field is empty.";
@@ -70,6 +109,7 @@
                 }
 
 
+
                 if (!empty($errorMessage)) {
                     echo "<div class='alert alert-danger m-3'>";
                     foreach ($errorMessage as $displayErrorMessage) {
@@ -85,12 +125,43 @@
                     $stmt->bindParam(':promotion_price', $promotion_price);
                     $stmt->bindParam(':manufacture_date', $manufacture_date);
                     $stmt->bindParam(':expired_date', $expired_date);
+                    $stmt->bindParam(":image", $image);
                     $created = date('Y-m-d H:i:s'); // get the current date and time
                     $stmt->bindParam(':created', $created);
 
                     // Execute the query
                     if ($stmt->execute()) {
                         echo "<div class='alert alert-success m-3'>Record was saved.</div>";
+                        // now, if image is not empty, try to upload the image
+                        if ($image) {
+                            // make sure the 'uploads' folder exists
+                            // if not, create it
+                            if (!is_dir($target_directory)) {
+                                mkdir($target_directory, 0777, true);
+                            }
+                            // if $file_upload_error_messages is still empty
+                            if (empty($file_upload_error_messages)) {
+                                // it means there are no errors, so try to upload the file
+                                if (move_uploaded_file($_FILES["image"]["tmp_name"], $target_file)) {
+                                    // it means photo was uploaded
+                                } else {
+                                    echo "<div class='alert alert-danger'>";
+                                    echo "<div>Unable to upload photo.</div>";
+                                    echo "<div>Update the record to upload photo.</div>";
+                                    echo "</div>";
+                                }
+                            }
+
+                            // if $file_upload_error_messages is NOT empty
+                            else {
+                                // it means there are some errors, so show them to user
+                                echo "<div class='alert alert-danger'>";
+                                echo "<div>{$file_upload_error_messages}</div>";
+                                echo "<div>Update the record to upload photo.</div>";
+                                echo "</div>";
+                            }
+                        }
+
                         $_POST = array();
                     } else {
                         echo "<div class='alert alert-danger m-3'>Unable to save the record.</div>";
@@ -106,7 +177,7 @@
 
         <div class="p-3">
             <!-- html form here where the product information will be entered -->
-            <form action="<?php echo $_SERVER["PHP_SELF"]; ?>" method="POST">
+            <form action="<?php echo $_SERVER["PHP_SELF"]; ?>" method="POST" enctype="multipart/form-data">
                 <table class='table table-hover table-responsive table-bordered'>
                     <tr>
                         <td>Name</td>
@@ -159,6 +230,11 @@
                         <td>Expired Date</td>
                         <td><input type='date' name='expired_date' class='form-control' value="<?php echo isset($_POST['expired_date']) ? $_POST['expired_date'] : ''; ?>" /></td>
                     </tr>
+                    <tr>
+                        <td>Photo</td>
+                        <td><input type="file" name="image" class="form-control" accept="image/*"></td>
+                    </tr>
+
                     <tr>
                         <td></td>
                         <td>

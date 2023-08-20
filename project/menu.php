@@ -1,11 +1,3 @@
-<?php
-if (isset($_GET['logout'])) {
-    session_destroy();
-    header("Location: login.php");
-    exit();
-}
-?>
-
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark fs-5">
     <div class="container">
         <ul class="navbar-nav mx-auto">

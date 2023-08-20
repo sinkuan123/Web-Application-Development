@@ -28,7 +28,7 @@
         // read current record's data
         try {
             // prepare select query
-            $query = "SELECT products.id, products.name, products.category_id, products.description, products.promotion_price, products.price, products.manufacture_date, products.expired_date,product_category.category_name FROM products INNER JOIN product_category  ON products.category_id = product_category.id WHERE products.id = ? LIMIT 0,1";
+            $query = "SELECT products.id, products.name, products.category_id, products.description, products.promotion_price, products.price, products.manufacture_date, products.expired_date, products.image, product_category.category_name FROM products INNER JOIN product_category  ON products.category_id = product_category.id WHERE products.id = ? LIMIT 0,1";
 
             $stmt = $con->prepare($query);
 
@@ -67,7 +67,7 @@
                 // it is better to label them and not use question marks
                 $query = "UPDATE products
                 SET name=:name, description=:description, category_id=:category_id,
-                price=:price, promotion_price=:promotion_price,manufacture_date=:manufacture_date, expired_date=:expired_date  WHERE products.id = :id";
+                price=:price, promotion_price=:promotion_price,manufacture_date=:manufacture_date, expired_date=:expired_date, image=:image  WHERE products.id = :id";
                 // prepare query for excecution
                 $stmt = $con->prepare($query);
                 // posted values
@@ -78,20 +78,124 @@
                 $promotion_price = htmlspecialchars(strip_tags($_POST['promotion_price']));
                 $manufacture_date = htmlspecialchars($_POST['manufacture_date']);
                 $expired_date = htmlspecialchars($_POST['expired_date']);
-                // bind the parameters
-                $stmt->bindParam(':name', $name);
-                $stmt->bindParam(':description', $description);
-                $stmt->bindParam(":category_id", $category_id);
-                $stmt->bindParam(':price', $price);
-                $stmt->bindParam(':promotion_price', $promotion_price);
-                $stmt->bindParam(":manufacture_date", $manufacture_date);
-                $stmt->bindParam(":expired_date", $expired_date);
-                $stmt->bindParam(':id', $id);
-                // Execute the query
-                if ($stmt->execute()) {
-                    echo "<div class='alert alert-success'>Record was updated.</div>";
+                $image = !empty($_FILES["image"]["name"])
+                    ? sha1_file($_FILES['image']['tmp_name']) . "-" . basename($_FILES["image"]["name"])
+                    : "";
+                $image = htmlspecialchars(strip_tags($image));
+                // upload to file to folder
+                $target_directory = "uploads/";
+                $target_file = $target_directory . $image;
+                $file_type = pathinfo($target_file, PATHINFO_EXTENSION);
+
+                $errorMessage = array();
+
+                if ($image) {
+                    //Check whether the size of image isn't square
+                    $image_check = getimagesize($_FILES['image']['tmp_name']);
+                    $image_width = $image_check[0];
+                    $image_height = $image_check[1];
+                    if ($image_width != $image_height) {
+                        $errorMessage[] = "Only square size image allowed.";
+                    }
+                    // make sure submitted file is not too large, can't be larger than 1 MB
+                    if ($_FILES['image']['size'] > (524288)) {
+                        $errorMessage[] = "<div>Image must be less than 512 KB in size.</div>";
+                    }
+                    // make sure that file is a real image
+                    if ($image_check == false) {
+                        $errorMessage[] = "<div>Submitted file is not an image.</div>";
+                    }
+                    // make sure certain file types are allowed
+                    $allowed_file_types = array("jpg", "jpeg", "png", "gif");
+                    if (!in_array($file_type, $allowed_file_types)) {
+                        $errorMessage[] = "<div>Only JPG, JPEG, PNG, GIF files are allowed.</div>";
+                    }
+                    // make sure file does not exist
+                    if (file_exists($target_file)) {
+                        $errorMessage[] = "<div>Image already exists. Try to change file name.</div>";
+                    }
+                }
+
+                if (empty($name)) {
+                    $errorMessage[] = "Name field is empty.";
+                }
+                if (empty($description)) {
+                    $errorMessage[] = "Description field is empty.";
+                }
+                if (empty($price)) {
+                    $errorMessage[] = "Price field is empty.";
+                } else if (!is_numeric($price)) {
+                    $errorMessage[] = "Prices can only be numbers.";
+                }
+                if (!is_numeric($promotion_price)) {
+                    $errorMessage[] = "Promotion prices can only be numbers.";
+                }
+                if (empty($manufacture_date)) {
+                    $errorMessage[] = "Manufacture date field is empty.";
+                }
+                if (empty($expired_date)) {
+                    $errorMessage[] = "Expired date field is empty.";
+                }
+                if ($promotion_price >= $price) {
+                    $errorMessage[] = "Promotion price must be cheaper than the original price.";
+                }
+                if ($expired_date <= $manufacture_date) {
+                    $errorMessage[] = "Expired date must be later than the manufacture date.";
+                }
+
+
+
+                if (!empty($errorMessage)) {
+                    echo "<div class='alert alert-danger m-3'>";
+                    foreach ($errorMessage as $displayErrorMessage) {
+                        echo $displayErrorMessage . "<br>";
+                    }
+                    echo "</div>";
                 } else {
-                    echo "<div class='alert alert-danger'>Unable to update record. Please try again.</div>";
+                    // bind the parameters
+                    $stmt->bindParam(':name', $name);
+                    $stmt->bindParam(':description', $description);
+                    $stmt->bindParam(":category_id", $category_id);
+                    $stmt->bindParam(':price', $price);
+                    $stmt->bindParam(':promotion_price', $promotion_price);
+                    $stmt->bindParam(":manufacture_date", $manufacture_date);
+                    $stmt->bindParam(":expired_date", $expired_date);
+                    $stmt->bindParam(":image", $image);
+                    $stmt->bindParam(':id', $id);
+                    // Execute the query
+                    if ($stmt->execute()) {
+                        echo "<div class='alert alert-success'>Record was updated.</div>";
+                        if ($image) {
+                            // make sure the 'uploads' folder exists
+                            // if not, create it
+                            if (!is_dir($target_directory)) {
+                                mkdir($target_directory, 0777, true);
+                            }
+                            // if $file_upload_error_messages is still empty
+                            if (empty($file_upload_error_messages)) {
+                                // it means there are no errors, so try to upload the file
+                                if (move_uploaded_file($_FILES["image"]["tmp_name"], $target_file)) {
+                                    // it means photo was uploaded
+                                } else {
+                                    echo "<div class='alert alert-danger'>";
+                                    echo "<div>Unable to upload photo.</div>";
+                                    echo "<div>Update the record to upload photo.</div>";
+                                    echo "</div>";
+                                }
+                            }
+
+                            // if $file_upload_error_messages is NOT empty
+                            else {
+                                // it means there are some errors, so show them to user
+                                echo "<div class='alert alert-danger'>";
+                                echo "<div>{$file_upload_error_messages}</div>";
+                                echo "<div>Update the record to upload photo.</div>";
+                                echo "</div>";
+                            }
+                        }
+                    } else {
+                        echo "<div class='alert alert-danger'>Unable to update record. Please try again.</div>";
+                    }
                 }
             }
             // show errors
@@ -101,7 +205,7 @@
         } ?><!-- PHP post to update record will be here -->
 
         <!--we have our html form here where new record information can be updated-->
-        <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"] . "?id={$id}"); ?>" method="post">
+        <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"] . "?id={$id}"); ?>" method="post" enctype="multipart/form-data">
             <table class='table table-hover table-responsive table-bordered'>
                 <tr>
                     <td>Name</td>
@@ -146,6 +250,10 @@
                 <tr>
                     <td>Expired Date</td>
                     <td><input type='date' name='expired_date' value="<?php echo htmlspecialchars($expired_date, ENT_QUOTES);  ?>" class='form-control' /></td>
+                </tr>
+                <tr>
+                    <td>Image</td>
+                    <td><input type='file' name='image' accept="image/*" class='form-control' /></td>
                 </tr>
                 <tr>
                     <td></td>
