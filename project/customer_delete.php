@@ -29,7 +29,7 @@ try {
     if (isset($error)) {
         header("Location: customer_read.php?action=failed");
     } else if ($stmt->execute()) {
-        unlink("uploads/" . $image['image']);
+        unlink($image['image']);
         // redirect to read records page and
         // tell the user record was deleted
         header("Location: customer_read.php?action=deleted");

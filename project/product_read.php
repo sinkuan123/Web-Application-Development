@@ -103,7 +103,7 @@
                 if ($image == "") {
                     echo '<td><img src="img/productpicture.png" height="100px" alt=""></td>';
                 } else {
-                    echo '<td><img src="uploads/<?php echo htmlspecialchars($image, ENT_QUOTES); ?>" height="100px" alt=""></td>';
+                    echo '<td><img src="' . $image . '" height="100px" alt=""></td>';
                 }
                 echo "<td class='col-3 text-center'>";
                 // read one record

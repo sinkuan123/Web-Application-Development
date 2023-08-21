@@ -97,9 +97,9 @@
                 echo "<td>{$account_status}</td>";
 
                 if ($image == "") {
-                    echo '<td><img src="img/profilepicture.png" height="100px" alt=""></td>';
+                    echo '<td><img src="img/profilepicture.png" width="100px" alt=""></td>';
                 } else {
-                    echo '<td><img src="uploads/<?php echo htmlspecialchars($image, ENT_QUOTES); ?>" height="100px" alt=""></td>';
+                    echo '<td><img src="' . $image . '" width="100px" alt=""></td>';
                 }
                 echo "<td class='text-center'>";
                 // read one record

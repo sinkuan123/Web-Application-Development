@@ -23,10 +23,6 @@
             // include database connection
             include 'config/database.php';
             try {
-                // insert query
-                $query = "INSERT INTO customers SET user_name=:user_name, user_password=:user_password, first_name=:first_name, last_name=:last_name, gender=:gender, date_of_birth=:date_of_birth,email=:email,  registration_date_time=:registration_date_time, account_status=:account_status, image=:image";
-                // prepare query for execution
-                $stmt = $con->prepare($query);
                 $user_name = $_POST['user_name'];
                 $user_password = $_POST['user_password'];
                 $confirm_password = $_POST['confirm_password'];
@@ -70,10 +66,6 @@
                     $allowed_file_types = array("jpg", "jpeg", "png", "gif");
                     if (!in_array($file_type, $allowed_file_types)) {
                         $errorMessage[] = "<div>Only JPG, JPEG, PNG, GIF files are allowed.</div>";
-                    }
-                    // make sure file does not exist
-                    if (file_exists($target_file)) {
-                        $errorMessage[] = "<div>Image already exists. Try to change file name.</div>";
                     }
                 }
                 if (empty($user_name)) {
@@ -121,6 +113,10 @@
                     }
                     echo "</div>";
                 } else {
+                    // insert query
+                    $query = "INSERT INTO customers SET user_name=:user_name, user_password=:user_password, first_name=:first_name, last_name=:last_name, gender=:gender, date_of_birth=:date_of_birth,email=:email,  registration_date_time=:registration_date_time, account_status=:account_status, image=:image";
+                    // prepare query for execution
+                    $stmt = $con->prepare($query);
                     // Bind the parameters
                     $stmt->bindParam(':user_name', $user_name);
                     $stmt->bindParam(':user_password', $hashed_password);
@@ -134,7 +130,7 @@
                     $stmt->bindParam(':registration_date_time', $registration_date_time);
                     $stmt->bindParam(':email', $email);
                     $stmt->bindParam(':account_status', $account_status);
-                    $stmt->bindParam(':image', $image);
+                    $stmt->bindParam(':image', $target_file);
 
 
                     // Execute the query

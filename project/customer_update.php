@@ -21,7 +21,7 @@
         include 'config/database.php';
 
         try {
-            $query = "SELECT customer_id, user_name, user_password, first_name, last_name, gender, date_of_birth, email, account_status FROM customers WHERE customer_id = ? LIMIT 0,1";
+            $query = "SELECT customer_id, user_name, user_password, first_name, last_name, gender, date_of_birth, email, account_status, image FROM customers WHERE customer_id = ? LIMIT 0,1";
             $stmt = $con->prepare($query);
 
             $stmt->bindParam(1, $id);
@@ -38,6 +38,7 @@
             $date_of_birth = $row['date_of_birth'];
             $email = $row['email'];
             $account_status = $row['account_status'];
+            $image = $row['image'];
         }
 
         // show error
@@ -48,7 +49,7 @@
             try {
                 $query = "UPDATE customers
                 SET user_name=:user_name, first_name=:first_name, last_name=:last_name, gender=:gender, date_of_birth=:date_of_birth, email=:email,
-                account_status=:account_status";
+                account_status=:account_status, image=:image";
                 // prepare query for excecution
 
                 // posted values
@@ -70,7 +71,6 @@
                 $target_directory = "uploads/";
                 $target_file = $target_directory . $image;
                 $file_type = pathinfo($target_file, PATHINFO_EXTENSION);
-
                 $error = array();
 
                 if ($image) {
@@ -144,10 +144,19 @@
                     $stmt->bindParam(':date_of_birth', $date_of_birth);
                     $stmt->bindParam(':email', $email);
                     $stmt->bindParam(':account_status', $account_status);
+                    if ($image == "") {
+                        $stmt->bindParam(":image", $row['image']);
+                    } else {
+                        $stmt->bindParam(':image', $target_file);
+                    }
                     // Execute the query
                     if ($stmt->execute()) {
                         echo "<div class='alert alert-success'>Record was updated.</div>";
                         if ($image) {
+                            if ($target_file != $row['image'] && $row['image'] != "") {
+                                unlink($row['image']);
+                            }
+
                             // make sure the 'uploads' folder exists
                             // if not, create it
                             if (!is_dir($target_directory)) {
@@ -186,7 +195,7 @@
             }
         } ?>
 
-        <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"] . "?id={$id}"); ?>" method="post">
+        <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"] . "?id={$id}"); ?>" method="post" enctype="multipart/form-data">
             <table class='table table-hover table-responsive table-bordered'>
                 <tr>
                     <td>User Name</td>
@@ -246,7 +255,14 @@
                 </tr>
                 <tr>
                     <td>Image</td>
-                    <td><input type='file' name='image' accept="image/*" class='form-control' /></td>
+                    <td>
+                        <?php if ($image == "") { ?>
+                            <img src="img/productpicture.png" width="200px" alt="">
+                        <?php } else { ?>
+                            <img src="uploads/<?php echo htmlspecialchars($image, ENT_QUOTES); ?>" width="200px" alt="">
+                        <?php } ?><br><br>
+                        <input type='file' name='image' accept="image/*" class='form-control' />
+                    </td>
                 </tr>
                 <tr>
                     <td></td>

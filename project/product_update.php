@@ -49,6 +49,7 @@
             $promotion_price = $row['promotion_price'];
             $manufacture_date = $row['manufacture_date'];
             $expired_date = $row['expired_date'];
+            $image = $row['image'];
         }
 
         // show error
@@ -160,12 +161,19 @@
                     $stmt->bindParam(':promotion_price', $promotion_price);
                     $stmt->bindParam(":manufacture_date", $manufacture_date);
                     $stmt->bindParam(":expired_date", $expired_date);
-                    $stmt->bindParam(":image", $image);
+                    if ($image == "") {
+                        $stmt->bindParam(":image", $row['image']);
+                    } else {
+                        $stmt->bindParam(':image', $target_file);
+                    }
                     $stmt->bindParam(':id', $id);
                     // Execute the query
                     if ($stmt->execute()) {
                         echo "<div class='alert alert-success'>Record was updated.</div>";
                         if ($image) {
+                            if ($target_file != $row['image'] && $row['image'] != "") {
+                                unlink($row['image']);
+                            }
                             // make sure the 'uploads' folder exists
                             // if not, create it
                             if (!is_dir($target_directory)) {
@@ -253,7 +261,14 @@
                 </tr>
                 <tr>
                     <td>Image</td>
-                    <td><input type='file' name='image' accept="image/*" class='form-control' /></td>
+                    <td>
+                        <?php if ($image == "") { ?>
+                            <img src="img/productpicture.png" width="200px" alt="">
+                        <?php } else { ?>
+                            <img src="<?php echo htmlspecialchars($image, ENT_QUOTES); ?>" width="200px" alt="">
+                        <?php } ?><br><br>
+                        <input type='file' name='image' accept="image/*" class='form-control' />
+                    </td>
                 </tr>
                 <tr>
                     <td></td>

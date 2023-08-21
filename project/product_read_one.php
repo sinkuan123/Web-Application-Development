@@ -98,9 +98,9 @@
                 <td>Image</td>
                 <td>
                     <?php if ($image == "") { ?>
-                        <img src="img/productpicture.png" alt="">
+                        <img src="img/productpicture.png" width="200px" alt="">
                     <?php } else { ?>
-                        <img src="uploads/<?php echo htmlspecialchars($image, ENT_QUOTES); ?>" alt="">
+                        <img src="<?php echo htmlspecialchars($image, ENT_QUOTES); ?>" width="200px" alt="">
                     <?php } ?>
                 </td>
             </tr>

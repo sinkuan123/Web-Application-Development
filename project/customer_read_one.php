@@ -49,7 +49,6 @@
             $registration_date_time = $row['registration_date_time'];
             $account_status = $row['account_status'];
             $image = $row['image'];
-            var_dump($image);
             // shorter way to do that is extract($row)
         }
 
@@ -98,9 +97,9 @@
                 <td>Image</td>
                 <td>
                     <?php if ($image == "") { ?>
-                        <img src="img/profilepicture.png" alt="">
+                        <img src="img/profilepicture.png" width="200px" alt="">
                     <?php } else { ?>
-                        <img src="uploads/<?php echo htmlspecialchars($image, ENT_QUOTES); ?>" alt="">
+                        <img src="<?php echo htmlspecialchars($image, ENT_QUOTES); ?>" width="200px" alt="">
                     <?php } ?>
                 </td>
             </tr>

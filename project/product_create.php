@@ -25,9 +25,6 @@
             include 'config/database.php';
             try {
                 // insert query
-                $query = "INSERT INTO products SET name=:name, category_id=:category_id, description=:description, price=:price, promotion_price=:promotion_price, manufacture_date=:manufacture_date, expired_date=:expired_date, image=:image, created=:created";
-                // prepare query for execution
-                $stmt = $con->prepare($query);
                 $name = $_POST['name'];
                 $category_id = $_POST['category_id'];
                 $description = $_POST['description'];
@@ -117,6 +114,9 @@
                     }
                     echo "</div>";
                 } else {
+                    $query = "INSERT INTO products SET name=:name, category_id=:category_id, description=:description, price=:price, promotion_price=:promotion_price, manufacture_date=:manufacture_date, expired_date=:expired_date, image=:image, created=:created";
+                    // prepare query for execution
+                    $stmt = $con->prepare($query);
                     // Bind the parameters
                     $stmt->bindParam(':name', $name);
                     $stmt->bindParam(':category_id', $category_id);
@@ -125,7 +125,7 @@
                     $stmt->bindParam(':promotion_price', $promotion_price);
                     $stmt->bindParam(':manufacture_date', $manufacture_date);
                     $stmt->bindParam(':expired_date', $expired_date);
-                    $stmt->bindParam(":image", $image);
+                    $stmt->bindParam(":image", $target_file);
                     $created = date('Y-m-d H:i:s'); // get the current date and time
                     $stmt->bindParam(':created', $created);
 
