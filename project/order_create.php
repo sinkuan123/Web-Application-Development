@@ -19,7 +19,7 @@
         <?php
         include 'config/database.php';
 
-        $customer_query = "SELECT customer_id, user_name FROM customers order by customer_id ASC";
+        $customer_query = "SELECT * FROM customers order by customer_id ASC";
         $customer_stmt = $con->prepare($customer_query);
         $customer_stmt->execute();
         $customers = $customer_stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -36,12 +36,24 @@
             $quantity = $_POST["quantity"];
             $customer_id = $_POST['customer'];
 
+            $status_query = "SELECT * FROM customers WHERE customer_id=?";
+            $status_stmt = $con->prepare($status_query);
+            $status_stmt->bindParam(1, $customer_id);
+            $status_stmt->execute();
+            $statuss = $status_stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($statuss['account_status'] == "Inactive") {
+                $error[] = "Inactive account can't make a order";
+            }
+            if ($customer_id == "") {
+                $error[] = "Please choose your user name.";
+            }
             $noduplicate = array_unique($product_id);
 
             if (sizeof($noduplicate) != sizeof($product_id)) {
                 foreach ($product_id as $key => $val) {
                     if (!array_key_exists($key, $noduplicate)) {
-                        $error[] = "Duplicated products have been chosen " . $products[$val - 1]['name'] . ".";
+                        $error[] = "Duplicated products not allowed.";
                         unset($quantity[$key]);
                     }
                 }
@@ -49,28 +61,23 @@
             $product_id = array_values($noduplicate);
             $quantity = array_values($quantity);
 
-
             $selected_product_count = isset($noduplicate) ? count($noduplicate) : count($_POST['product']);
 
-            try {
-                if ($customer_id == "") {
-                    $error[] = "Please choose your user name.";
-                }
+            if (isset($selected_product_count)) {
+                for ($i = 0; $i < $selected_product_count; $i++) {
+                    if ($product_id[$i] == "") {
+                        $error[] = " Please choose the product for NO " . $i + 1 . ".";
+                    }
 
-                if (isset($selected_product_count)) {
-                    for ($i = 0; $i < $selected_product_count; $i++) {
-                        if ($product_id[$i] == "") {
-                            $error[] = " Please choose the product for NO " . $i + 1 . ".";
-                        }
-
-                        if ($quantity[$i] == 0 || empty($quantity[$i])) {
-                            $error[] = "Quantity Can not be zero or empty.";
-                        } else if ($quantity[$i] < 0) {
-                            $error[] = "Quantity Can not be negative number.";
-                        }
+                    if ($quantity[$i] == 0 || empty($quantity[$i])) {
+                        $error[] = "Quantity Can not be zero or empty.";
+                    } else if ($quantity[$i] < 0) {
+                        $error[] = "Quantity Can not be negative number.";
                     }
                 }
+            }
 
+            try {
                 if (!empty($error)) {
                     echo "<div class='alert alert-danger role='alert'>";
                     foreach ($error as $error_message) {

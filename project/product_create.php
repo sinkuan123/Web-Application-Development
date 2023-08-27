@@ -89,7 +89,7 @@
                 } else if (!is_numeric($price)) {
                     $errorMessage[] = "Prices can only be numbers.";
                 }
-                if (!is_numeric($promotion_price)) {
+                if (!empty($promotion_price) && !is_numeric($promotion_price)) {
                     $errorMessage[] = "Promotion prices can only be numbers.";
                 }
                 if (empty($manufacture_date)) {

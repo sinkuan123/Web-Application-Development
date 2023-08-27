@@ -13,66 +13,80 @@ if (isset($_SESSION['customer_id'])) {
     <title>PDO - Create a Record - PHP CRUD Tutorial</title>
     <!-- Latest compiled and minified Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <style>
+        body {
+            background-image: url(img/login_bg.jpg);
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: center center;
+            background-attachment: fixed;
+        }
 
+        @media (max-width:550px) {
+            .col {
+                width: 100% !important;
+            }
+        }
+    </style>
 </head>
 
 <body>
     <!-- container -->
     <div class="container pb-5">
-        <div class="page-header bg-primary p-5">
-            <h1 class="text-center font-monospace text-light">Log In</h1>
-        </div>
-        <div>
-            <?php
+        <?php
 
-            $action = isset($_GET['action']) ? $_GET['action'] : "";
-            if ($action == "warning") {
-                echo "<div class='alert alert-danger m-3'>Please login to your account first.</div>";
+        $action = isset($_GET['action']) ? $_GET['action'] : "";
+        if ($action == "warning") {
+            $error = "Please login to your account first";
+        }
+
+        if ($_POST) {
+            // include database connection
+            include 'config/database.php';
+
+            $user_input = $_POST['user_input'];
+            $password_input = $_POST['password_input'];
+
+            if (empty($user_input)) {
+                $user_input_err = "Please enter the Username/Email field.";
             }
+            if (empty($password_input)) {
+                $password_input_err = "Please enter the Password field";
+            } else {
+                try {
+                    $query = "SELECT * FROM customers WHERE user_name=:user_input OR email=:user_input";
+                    $stmt = $con->prepare($query);
+                    $stmt->bindParam(':user_input', $user_input);
+                    $stmt->execute();
+                    $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            if ($_POST) {
-                // include database connection
-                include 'config/database.php';
-
-                $user_input = $_POST['user_input'];
-                $password_input = $_POST['password_input'];
-
-                if (empty($user_input)) {
-                    $user_input_err = "Please enter the Username/Email field.";
-                }
-                if (empty($password_input)) {
-                    $password_input_err = "Please enter the Password field";
-                } else {
-                    try {
-                        $query = "SELECT * FROM customers WHERE user_name=:user_input OR email=:user_input";
-                        $stmt = $con->prepare($query);
-                        $stmt->bindParam(':user_input', $user_input);
-                        $stmt->execute();
-                        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-                        if ($row) {
-                            if (password_verify($password_input, $row['user_password'])) {
-                                if ($row['account_status'] == 'Active') {
-                                    $_SESSION['customer_id'] = $row['customer_id'];
-                                    header("Location: index.php");
-                                    exit();
-                                } else {
-                                    $error = "Inactive account.";
-                                }
+                    if ($row) {
+                        if (password_verify($password_input, $row['user_password'])) {
+                            if ($row['account_status'] == 'Active') {
+                                $_SESSION['customer_id'] = $row['customer_id'];
+                                header("Location: index.php");
+                                exit();
                             } else {
-                                $error = "Incorrect password.";
+                                $error = "Inactive account.";
                             }
                         } else {
-                            $error = "Username/Email Not Found.";
+                            $error = "Incorrect password.";
                         }
-                    } catch (PDOException $exception) {
-                        $error = $exception->getMessage();
+                    } else {
+                        $error = "Username/Email Not Found.";
                     }
+                } catch (PDOException $exception) {
+                    $error = $exception->getMessage();
                 }
             }
-            ?>
-
-            <div class="container w-50 border border-3 bg-light p-4 shadow my-5">
+        }
+        ?>
+        <div class="position-absolute top-50 start-50 translate-middle row justify-content-center align-items-center w-75">
+            <div class="col">
+                <h1 class="text-primary"><strong>SK Stationery</strong></h1>
+                <h7 class="fs-5">SK Stationery E-Commerce Website</h7>
+            </div>
+            <div class="col w-100 border border-3 bg-opacity-0 p-4 shadow">
                 <form action="" method="post">
                     <div class="my-3">
                         <label for="user_input">Username/Email</label>
@@ -87,7 +101,7 @@ if (isset($_SESSION['customer_id'])) {
                     <div class="text-center">
                         <button class='btn btn-primary m-r-1em fs-5 px-5' name="submit" type="submit">Login</button>
                     </div>
-                    <span class="text-danger"><?php echo isset($error) ? $error : ''; ?></span>
+                    <div class="text-center"><span class="text-danger"><?php echo isset($error) ? $error : ''; ?></span></div>
                 </form>
             </div>
         </div>

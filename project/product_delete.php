@@ -6,11 +6,11 @@ try {
     // isset() is a PHP function used to verify if a value is there or not
     $id = isset($_GET['id']) ? $_GET['id'] :  die('ERROR: Record ID not found.');
 
-
-    $product_exist_query = "SELECT id FROM products WHERE EXISTS (SELECT product_id FROM order_detail WHERE order_detail.product_id = products.id)";
+    $product_exist_query = "SELECT COUNT(*) FROM order_details WHERE product_id = ?";
     $product_exist_stmt = $con->prepare($product_exist_query);
+    $product_exist_stmt->bindParam(1, $id);
     $product_exist_stmt->execute();
-    $products = $product_exist_stmt->fetchAll(PDO::FETCH_ASSOC);
+    $products = $product_exist_stmt->fetchColumn();
 
     $image_query = "SELECT image FROM products WHERE id=?";
     $image_stmt = $con->prepare($image_query);
@@ -21,15 +21,15 @@ try {
     $query = "DELETE FROM products WHERE id = ?";
     $stmt = $con->prepare($query);
     $stmt->bindParam(1, $id);
-    for ($i = 0; $i < count($products); $i++) {
-        if ($id == $products[$i]['id'])
-            $error = 1;
-    }
-    if (isset($error)) {
+
+    if ($products != 0) {
         header("Location: product_read.php?action=failed");
     } else if ($stmt->execute()) {
-
-        unlink($image['image']);
+        if ($image['image'] != "img/productpicture.png") {
+            if (file_exists($image['image'])) {
+                unlink($image['image']);
+            }
+        }
         // redirect to read records page and
         // tell the user record was deleted
         header("Location: product_read.php?action=deleted");

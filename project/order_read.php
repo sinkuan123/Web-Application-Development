@@ -38,7 +38,7 @@
             $search = "%{$search}%";
         }
 
-        $query .= " ORDER BY order_id ASC";
+        $query .= " ORDER BY order_id DESC";
 
         $stmt = $con->prepare($query);
 
@@ -83,7 +83,7 @@
                 echo "<tr>";
                 echo "<td>{$order_id}</td>";
                 echo "<td>{$first_name} {$last_name}</td>";
-                echo "<td class='text-end'>RM {$total_amount}</td>";
+                echo "<td class='text-end'>RM " . number_format((float)$total_amount, 2, '.', '') . "</td>";
                 echo "<td>{$order_date}</td>";
                 echo "<td>
                 <a href='order_detail_read.php?order_id={$order_id}' class='btn btn-info m-r-1em mx-2'>Read</a>

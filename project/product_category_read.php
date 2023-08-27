@@ -42,7 +42,7 @@
             $search = "%{$search}%";
         }
 
-        $query .= " ORDER BY id ASC";
+        $query .= " ORDER BY id DESC";
 
         $stmt = $con->prepare($query);
 

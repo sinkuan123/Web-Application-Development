@@ -40,7 +40,7 @@
             $query .= " WHERE (user_name LIKE :search OR first_name LIKE :search OR last_name LIKE :search OR user_name LIKE :search OR email LIKE :search)";
             $search = "%{$search}%";
         }
-        $query .= " ORDER BY customer_id ASC";
+        $query .= " ORDER BY customer_id DESC";
         $stmt = $con->prepare($query);
 
         if (!empty($search)) {
@@ -99,6 +99,7 @@
                 if ($image == "") {
                     echo '<td><img src="img/profilepicture.png" width="100px" alt=""></td>';
                 } else {
+
                     echo '<td><img src="' . $image . '" width="100px" alt=""></td>';
                 }
                 echo "<td class='text-center'>";

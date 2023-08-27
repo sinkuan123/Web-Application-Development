@@ -54,7 +54,7 @@
             if (sizeof($noduplicate) != sizeof($product_id)) {
                 foreach ($product_id as $key => $val) {
                     if (!array_key_exists($key, $noduplicate)) {
-                        $error[] = "Duplicated products have been chosen " . $products[$val - 1]['name'] . ".";
+                        $error[] = "Duplicated products not allowed (Product No. " . $key . ").";
                         unset($quantity[$key]);
                     }
                 }
@@ -91,7 +91,12 @@
                     $order_date = date('Y-m-d H:i:s');
                     $total_amount = 0;
                     for ($x = 0; $x < $selected_product_count; $x++) {
-                        $amount =  ($products[$product_id[$x] - 1]['promotion_price'] != 0) ?  $products[$product_id[$x] - 1]['promotion_price'] * $quantity[$x] : $products[$product_id[$x] - 1]['price'] * $quantity[$x];
+                        $price_query = "SELECT * FROM products WHERE id=?";
+                        $price_stmt = $con->prepare($price_query);
+                        $price_stmt->bindParam(1, $product_id[$x]);
+                        $price_stmt->execute();
+                        $prices = $price_stmt->fetch(PDO::FETCH_ASSOC);
+                        $amount =  ($prices['promotion_price'] != 0) ?  $prices['promotion_price'] * $quantity[$x] : $prices['price'] * $quantity[$x];
 
                         $total_amount += $amount;
                     }
@@ -154,14 +159,18 @@
                                     <option value="">Choose a Product</option>
                                     <?php
                                     for ($i = 0; $i < count($products); $i++) {
-                                        $product_selected = $products[$i]['id'] == $order_details[$x]['product_id'] ? "selected" : "";
+                                        if ($_POST) {
+                                            $product_selected = $product_id[$x] == $products[$i]['id'] ? "selected" : "";
+                                        } else {
+                                            $product_selected = $products[$i]['id'] == $order_details[$x]['product_id'] ? "selected" : "";
+                                        }
                                         echo "<option value='{$products[$i]['id']}' $product_selected>{$products[$i]['name']}</option>";
                                     }
                                     ?>
                                 </select>
                             </td>
                             <td>
-                                <input type="number" class="form-control" name="quantity[]" id="quantity" value="<?php echo $order_details[$x]['quantity'] ?>">
+                                <input type="number" class="form-control" name="quantity[]" id="quantity" value="<?php echo $_POST ? $quantity[$x] : $order_details[$x]['quantity'] ?>">
 
                             </td>
                             <td>
@@ -192,6 +201,11 @@
                         var lastRow = rows[rows.length - 1];
                         // Clone the last row
                         var clone = lastRow.cloneNode(true);
+                        const [productsSelect, quantityInput] = clone.querySelectorAll('select[name="product[]"], input[name="quantity[]"]');
+                        productsSelect.value = "";
+                        quantityInput.value = 1;
+                        // Insert the clone after the last row
+                        lastRow.insertAdjacentElement('afterend', clone);
                         // Insert the clone after the last row
                         lastRow.insertAdjacentElement('afterend', clone);
 

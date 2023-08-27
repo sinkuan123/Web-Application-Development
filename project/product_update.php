@@ -63,146 +63,159 @@
         // check if form was submitted
         if ($_POST) {
             try {
-                // write update query
-                // in this case, it seemed like we have so many fields to pass and
-                // it is better to label them and not use question marks
-                $query = "UPDATE products
+                if (isset($_POST['delete_image'])) {
+                    $empty = "";
+                    $delete_query = "UPDATE products
+                    SET image=:image  WHERE products.id = :id";
+                    $delete_stmt = $con->prepare($delete_query);
+                    $delete_stmt->bindParam(":image", $empty);
+                    $delete_stmt->bindParam(":id", $id);
+                    $delete_stmt->execute();
+                    unlink($image);
+                    header("Location: product_read_one.php?id={$id}");
+                } else {
+                    // write update query
+                    // in this case, it seemed like we have so many fields to pass and
+                    // it is better to label them and not use question marks
+                    $query = "UPDATE products
                 SET name=:name, description=:description, category_id=:category_id,
                 price=:price, promotion_price=:promotion_price,manufacture_date=:manufacture_date, expired_date=:expired_date, image=:image  WHERE products.id = :id";
-                // prepare query for excecution
-                $stmt = $con->prepare($query);
-                // posted values
-                $name = htmlspecialchars(strip_tags($_POST['name']));
-                $description = htmlspecialchars(strip_tags($_POST['description']));
-                $category_id = $_POST['category_id'];
-                $price = htmlspecialchars(strip_tags($_POST['price']));
-                $promotion_price = htmlspecialchars(strip_tags($_POST['promotion_price']));
-                $manufacture_date = htmlspecialchars($_POST['manufacture_date']);
-                $expired_date = htmlspecialchars($_POST['expired_date']);
-                $image = !empty($_FILES["image"]["name"])
-                    ? sha1_file($_FILES['image']['tmp_name']) . "-" . basename($_FILES["image"]["name"])
-                    : "";
-                $image = htmlspecialchars(strip_tags($image));
-                // upload to file to folder
-                $target_directory = "uploads/";
-                $target_file = $target_directory . $image;
-                $file_type = pathinfo($target_file, PATHINFO_EXTENSION);
+                    // prepare query for excecution
+                    $stmt = $con->prepare($query);
+                    // posted values
+                    $name = htmlspecialchars(strip_tags($_POST['name']));
+                    $description = htmlspecialchars(strip_tags($_POST['description']));
+                    $category_id = $_POST['category_id'];
+                    $price = htmlspecialchars(strip_tags($_POST['price']));
+                    $promotion_price = htmlspecialchars(strip_tags($_POST['promotion_price']));
+                    $manufacture_date = htmlspecialchars($_POST['manufacture_date']);
+                    $expired_date = htmlspecialchars($_POST['expired_date']);
+                    $image = !empty($_FILES["image"]["name"])
+                        ? sha1_file($_FILES['image']['tmp_name']) . "-" . basename($_FILES["image"]["name"])
+                        : "";
+                    $image = htmlspecialchars(strip_tags($image));
+                    // upload to file to folder
+                    $target_directory = "uploads/";
+                    $target_file = $target_directory . $image;
+                    $file_type = pathinfo($target_file, PATHINFO_EXTENSION);
 
-                $errorMessage = array();
+                    $errorMessage = array();
 
-                if ($image) {
-                    //Check whether the size of image isn't square
-                    $image_check = getimagesize($_FILES['image']['tmp_name']);
-                    $image_width = $image_check[0];
-                    $image_height = $image_check[1];
-                    if ($image_width != $image_height) {
-                        $errorMessage[] = "Only square size image allowed.";
+                    if ($image) {
+                        //Check whether the size of image isn't square
+                        $image_check = getimagesize($_FILES['image']['tmp_name']);
+                        $image_width = $image_check[0];
+                        $image_height = $image_check[1];
+                        if ($image_width != $image_height) {
+                            $errorMessage[] = "Only square size image allowed.";
+                        }
+                        // make sure submitted file is not too large, can't be larger than 1 MB
+                        if ($_FILES['image']['size'] > (524288)) {
+                            $errorMessage[] = "<div>Image must be less than 512 KB in size.</div>";
+                        }
+                        // make sure that file is a real image
+                        if ($image_check == false) {
+                            $errorMessage[] = "<div>Submitted file is not an image.</div>";
+                        }
+                        // make sure certain file types are allowed
+                        $allowed_file_types = array("jpg", "jpeg", "png", "gif");
+                        if (!in_array($file_type, $allowed_file_types)) {
+                            $errorMessage[] = "<div>Only JPG, JPEG, PNG, GIF files are allowed.</div>";
+                        }
+                        // make sure file does not exist
+                        if (file_exists($target_file)) {
+                            $errorMessage[] = "<div>Image already exists. Try to change file name.</div>";
+                        }
                     }
-                    // make sure submitted file is not too large, can't be larger than 1 MB
-                    if ($_FILES['image']['size'] > (524288)) {
-                        $errorMessage[] = "<div>Image must be less than 512 KB in size.</div>";
-                    }
-                    // make sure that file is a real image
-                    if ($image_check == false) {
-                        $errorMessage[] = "<div>Submitted file is not an image.</div>";
-                    }
-                    // make sure certain file types are allowed
-                    $allowed_file_types = array("jpg", "jpeg", "png", "gif");
-                    if (!in_array($file_type, $allowed_file_types)) {
-                        $errorMessage[] = "<div>Only JPG, JPEG, PNG, GIF files are allowed.</div>";
-                    }
-                    // make sure file does not exist
-                    if (file_exists($target_file)) {
-                        $errorMessage[] = "<div>Image already exists. Try to change file name.</div>";
-                    }
-                }
 
-                if (empty($name)) {
-                    $errorMessage[] = "Name field is empty.";
-                }
-                if (empty($description)) {
-                    $errorMessage[] = "Description field is empty.";
-                }
-                if (empty($price)) {
-                    $errorMessage[] = "Price field is empty.";
-                } else if (!is_numeric($price)) {
-                    $errorMessage[] = "Prices can only be numbers.";
-                }
-                if (!is_numeric($promotion_price)) {
-                    $errorMessage[] = "Promotion prices can only be numbers.";
-                }
-                if (empty($manufacture_date)) {
-                    $errorMessage[] = "Manufacture date field is empty.";
-                }
-                if (empty($expired_date)) {
-                    $errorMessage[] = "Expired date field is empty.";
-                }
-                if ($promotion_price >= $price) {
-                    $errorMessage[] = "Promotion price must be cheaper than the original price.";
-                }
-                if ($expired_date <= $manufacture_date) {
-                    $errorMessage[] = "Expired date must be later than the manufacture date.";
-                }
-
-
-
-                if (!empty($errorMessage)) {
-                    echo "<div class='alert alert-danger m-3'>";
-                    foreach ($errorMessage as $displayErrorMessage) {
-                        echo $displayErrorMessage . "<br>";
+                    if (empty($name)) {
+                        $errorMessage[] = "Name field is empty.";
                     }
-                    echo "</div>";
-                } else {
-                    // bind the parameters
-                    $stmt->bindParam(':name', $name);
-                    $stmt->bindParam(':description', $description);
-                    $stmt->bindParam(":category_id", $category_id);
-                    $stmt->bindParam(':price', $price);
-                    $stmt->bindParam(':promotion_price', $promotion_price);
-                    $stmt->bindParam(":manufacture_date", $manufacture_date);
-                    $stmt->bindParam(":expired_date", $expired_date);
-                    if ($image == "") {
-                        $stmt->bindParam(":image", $row['image']);
+                    if (empty($description)) {
+                        $errorMessage[] = "Description field is empty.";
+                    }
+                    if (empty($price)) {
+                        $errorMessage[] = "Price field is empty.";
+                    } else if (!is_numeric($price)) {
+                        $errorMessage[] = "Prices can only be numbers.";
+                    }
+                    if (!empty($promotion_price) && !is_numeric($promotion_price)) {
+                        $errorMessage[] = "Promotion prices can only be numbers.";
+                    }
+                    if (empty($manufacture_date)) {
+                        $errorMessage[] = "Manufacture date field is empty.";
+                    }
+                    if (empty($expired_date)) {
+                        $errorMessage[] = "Expired date field is empty.";
+                    }
+                    if ($promotion_price >= $price) {
+                        $errorMessage[] = "Promotion price must be cheaper than the original price.";
+                    }
+                    if ($expired_date <= $manufacture_date) {
+                        $errorMessage[] = "Expired date must be later than the manufacture date.";
+                    }
+
+
+
+                    if (!empty($errorMessage)) {
+                        echo "<div class='alert alert-danger m-3'>";
+                        foreach ($errorMessage as $displayErrorMessage) {
+                            echo $displayErrorMessage . "<br>";
+                        }
+                        echo "</div>";
                     } else {
-                        $stmt->bindParam(':image', $target_file);
-                    }
-                    $stmt->bindParam(':id', $id);
-                    // Execute the query
-                    if ($stmt->execute()) {
-                        echo "<div class='alert alert-success'>Record was updated.</div>";
-                        if ($image) {
-                            if ($target_file != $row['image'] && $row['image'] != "") {
-                                unlink($row['image']);
-                            }
-                            // make sure the 'uploads' folder exists
-                            // if not, create it
-                            if (!is_dir($target_directory)) {
-                                mkdir($target_directory, 0777, true);
-                            }
-                            // if $file_upload_error_messages is still empty
-                            if (empty($file_upload_error_messages)) {
-                                // it means there are no errors, so try to upload the file
-                                if (move_uploaded_file($_FILES["image"]["tmp_name"], $target_file)) {
-                                    // it means photo was uploaded
-                                } else {
+                        // bind the parameters
+                        $stmt->bindParam(':name', $name);
+                        $stmt->bindParam(':description', $description);
+                        $stmt->bindParam(":category_id", $category_id);
+                        $stmt->bindParam(':price', $price);
+                        $stmt->bindParam(':promotion_price', $promotion_price);
+                        $stmt->bindParam(":manufacture_date", $manufacture_date);
+                        $stmt->bindParam(":expired_date", $expired_date);
+                        if ($image == "") {
+                            $stmt->bindParam(":image", $row['image']);
+                        } else {
+                            $stmt->bindParam(':image', $target_file);
+                        }
+                        $stmt->bindParam(':id', $id);
+                        // Execute the query
+                        if ($stmt->execute()) {
+                            echo "<div class='alert alert-success'>Record was updated.</div>";
+                            if ($image) {
+                                if ($target_file != $row['image'] && $row['image'] != "") {
+                                    unlink($row['image']);
+                                }
+                                // make sure the 'uploads' folder exists
+                                // if not, create it
+                                if (!is_dir($target_directory)) {
+                                    mkdir($target_directory, 0777, true);
+                                }
+                                // if $file_upload_error_messages is still empty
+                                if (empty($file_upload_error_messages)) {
+                                    // it means there are no errors, so try to upload the file
+                                    if (move_uploaded_file($_FILES["image"]["tmp_name"], $target_file)) {
+                                        // it means photo was uploaded
+                                    } else {
+                                        echo "<div class='alert alert-danger'>";
+                                        echo "<div>Unable to upload photo.</div>";
+                                        echo "<div>Update the record to upload photo.</div>";
+                                        echo "</div>";
+                                    }
+                                }
+
+                                // if $file_upload_error_messages is NOT empty
+                                else {
+                                    // it means there are some errors, so show them to user
                                     echo "<div class='alert alert-danger'>";
-                                    echo "<div>Unable to upload photo.</div>";
+                                    echo "<div>{$file_upload_error_messages}</div>";
                                     echo "<div>Update the record to upload photo.</div>";
                                     echo "</div>";
                                 }
                             }
-
-                            // if $file_upload_error_messages is NOT empty
-                            else {
-                                // it means there are some errors, so show them to user
-                                echo "<div class='alert alert-danger'>";
-                                echo "<div>{$file_upload_error_messages}</div>";
-                                echo "<div>Update the record to upload photo.</div>";
-                                echo "</div>";
-                            }
+                            header("Location: product_read_one.php?id={$id}");
+                        } else {
+                            echo "<div class='alert alert-danger'>Unable to update record. Please try again.</div>";
                         }
-                    } else {
-                        echo "<div class='alert alert-danger'>Unable to update record. Please try again.</div>";
                     }
                 }
             }
@@ -245,11 +258,11 @@
                 </tr>
                 <tr>
                     <td>Price</td>
-                    <td><input type='text' name='price' value="<?php echo htmlspecialchars($price, ENT_QUOTES);  ?>" class='form-control' /></td>
+                    <td><input type='text' name='price' value="<?php echo htmlspecialchars(number_format((float)$price, 2, '.', ''), ENT_QUOTES);  ?>" class='form-control' /></td>
                 </tr>
                 <tr>
                     <td>promotion_price</td>
-                    <td><input type='text' name='promotion_price' value="<?php echo htmlspecialchars($promotion_price, ENT_QUOTES);  ?>" class='form-control' /></td>
+                    <td><input type='text' name='promotion_price' value="<?php echo htmlspecialchars(number_format((float)$promotion_price, 2, '.', ''), ENT_QUOTES);  ?>" class='form-control' /></td>
                 </tr>
                 <tr>
                     <td>Manufacture Date</td>
@@ -274,7 +287,10 @@
                     <td></td>
                     <td>
                         <input type='submit' value='Save Changes' class='btn btn-primary' />
-                        <a href='product_read.php' class='btn btn-danger'>Back to read products</a>
+                        <?php if ($image != "") { ?>
+                            <input type="submit" value="Delete Image" class="btn btn-danger" name="delete_image">
+                        <?php } ?>
+                        <a href='product_read.php' class='btn btn-info'>Back to read products</a>
                     </td>
                 </tr>
             </table>

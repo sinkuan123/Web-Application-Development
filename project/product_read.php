@@ -43,7 +43,7 @@
             $search = "%{$search}%";
         }
 
-        $query .= " ORDER BY id ASC";
+        $query .= " ORDER BY id DESC";
 
         $stmt = $con->prepare($query);
 
@@ -96,7 +96,7 @@
                 echo "<td>{$category_name}</td>";
                 echo "<td class='col-6'>{$description}</td>";
                 if ($promotion_price != 0) {
-                    echo "<td class='d-flex justify-content-end'><p class='me-1 text-decoration-line-through''>" . number_format((float)$price, 2, '.', '') . "</p><p >"  . number_format((float)$promotion_price, 2, '.', '') .  "</p></td>";
+                    echo "<td><div class='d-flex justify-content-end'><p class='me-1 text-decoration-line-through''>" . number_format((float)$price, 2, '.', '') . "</p><p >"  . number_format((float)$promotion_price, 2, '.', '') .  "</p></div></td>";
                 } else {
                     echo "<td class='text-end'>" . number_format((float)$price, 2, '.', '') . "</td>";
                 }
