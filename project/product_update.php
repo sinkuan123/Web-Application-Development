@@ -145,14 +145,11 @@
                     if (empty($manufacture_date)) {
                         $errorMessage[] = "Manufacture date field is empty.";
                     }
-                    if (empty($expired_date)) {
-                        $errorMessage[] = "Expired date field is empty.";
+                    if (!empty($expired_date) && $expired_date <= $manufacture_date) {
+                        $errorMessage[] = "Expired date must be later than the manufacture date.";
                     }
                     if ($promotion_price >= $price) {
                         $errorMessage[] = "Promotion price must be cheaper than the original price.";
-                    }
-                    if ($expired_date <= $manufacture_date) {
-                        $errorMessage[] = "Expired date must be later than the manufacture date.";
                     }
 
 
@@ -180,7 +177,6 @@
                         $stmt->bindParam(':id', $id);
                         // Execute the query
                         if ($stmt->execute()) {
-                            echo "<div class='alert alert-success'>Record was updated.</div>";
                             if ($image) {
                                 if ($target_file != $row['image'] && $row['image'] != "") {
                                     unlink($row['image']);
@@ -212,7 +208,7 @@
                                     echo "</div>";
                                 }
                             }
-                            header("Location: product_read_one.php?id={$id}");
+                            header("Location: product_read_one.php?id={$id}&action=update_success");
                         } else {
                             echo "<div class='alert alert-danger'>Unable to update record. Please try again.</div>";
                         }

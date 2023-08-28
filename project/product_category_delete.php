@@ -13,7 +13,7 @@ try {
     $products = $product_exist_stmt->fetchColumn();
 
     // delete query
-    $query = "DELETE FROM products WHERE id = ?";
+    $query = "DELETE FROM product_category WHERE id = ?";
     $stmt = $con->prepare($query);
     $stmt->bindParam(1, $id);
     if ($products != 0) {

@@ -6,7 +6,7 @@ try {
     // isset() is a PHP function used to verify if a value is there or not
     $id = isset($_GET['id']) ? $_GET['id'] :  die('ERROR: Record ID not found.');
 
-    $product_exist_query = "SELECT COUNT(*) FROM order_details WHERE product_id = ?";
+    $product_exist_query = "SELECT COUNT(*) FROM order_detail WHERE product_id = ?";
     $product_exist_stmt = $con->prepare($product_exist_query);
     $product_exist_stmt->bindParam(1, $id);
     $product_exist_stmt->execute();

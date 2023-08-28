@@ -1,5 +1,4 @@
 <?php include "validatelogin.php"; ?>
-<!DOCTYPE HTML>
 <html>
 
 <head>
@@ -41,13 +40,12 @@
             $status_stmt->bindParam(1, $customer_id);
             $status_stmt->execute();
             $statuss = $status_stmt->fetch(PDO::FETCH_ASSOC);
-
-            if ($statuss['account_status'] == "Inactive") {
-                $error[] = "Inactive account can't make a order";
-            }
             if ($customer_id == "") {
                 $error[] = "Please choose your user name.";
+            } else if ($statuss['account_status'] == "Inactive") {
+                $error[] = "Inactive account can't make a order";
             }
+
             $noduplicate = array_unique($product_id);
 
             if (sizeof($noduplicate) != sizeof($product_id)) {
@@ -118,7 +116,6 @@
                         $order_detail_stmt->bindParam(":quantity", $quantity[$i]);
                         $order_detail_stmt->execute();
                     }
-                    echo "<div class='alert alert-success' role='alert'>Order Placed Successfully.</div>";
                     header("Location: order_detail_read.php?order_id={$order_id}");
                     $_POST = array();
                 }
@@ -199,6 +196,9 @@
                         var lastRow = rows[rows.length - 1];
                         // Clone the last row
                         var clone = lastRow.cloneNode(true);
+                        const [productsSelect, quantityInput] = clone.querySelectorAll('select[name="product[]"], input[name="quantity[]"]');
+                        productsSelect.value = "";
+                        quantityInput.value = 1;
                         // Insert the clone after the last row
                         lastRow.insertAdjacentElement('afterend', clone);
 

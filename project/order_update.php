@@ -22,11 +22,6 @@
 
         include 'config/database.php';
 
-        $customer_query = "SELECT * FROM customers";
-        $customer_stmt = $con->prepare($customer_query);
-        $customer_stmt->execute();
-        $customers = $customer_stmt->fetchAll(PDO::FETCH_ASSOC);
-
         $product_query = "SELECT * FROM products";
         $product_stmt = $con->prepare($product_query);
         $product_stmt->execute();
@@ -44,25 +39,13 @@
         $order_detail_stmt->execute();
         $order_details = $order_detail_stmt->fetchAll(PDO::FETCH_ASSOC);
 
+        $selected_product_count = count($order_details);
         $error = array();
         if ($_POST) {
             $product_id = $_POST["product"];
             $quantity = $_POST["quantity"];
 
-            $noduplicate = array_unique($product_id);
-
-            if (sizeof($noduplicate) != sizeof($product_id)) {
-                foreach ($product_id as $key => $val) {
-                    if (!array_key_exists($key, $noduplicate)) {
-                        $error[] = "Duplicated products not allowed (Product No. " . $key . ").";
-                        unset($quantity[$key]);
-                    }
-                }
-            }
-            $product_id = array_values($noduplicate);
-            $quantity = array_values($quantity);
-
-            $selected_product_count = isset($noduplicate) ? count($noduplicate) : count($order_details);
+            $selected_product_count = count($product_id);
 
             try {
 
@@ -79,7 +62,29 @@
                         }
                     }
                 }
+                if (empty($error)) {
 
+
+                    $noduplicate = array_unique($product_id);
+
+                    if (sizeof($noduplicate) != sizeof($product_id)) {
+                        foreach ($product_id as $key => $val) {
+                            if (!array_key_exists($key, $noduplicate)) {
+                                $duplicated_product_query = "SELECT * FROM products where id=?";
+                                $duplicated_product_stmt = $con->prepare($duplicated_product_query);
+                                $duplicated_product_stmt->bindParam(1, $val);
+                                $duplicated_product_stmt->execute();
+                                $duplicates = $duplicated_product_stmt->fetch(PDO::FETCH_ASSOC);
+                                $error[] = "Duplicated products not allowed (" . $duplicates['name'] . ").";
+                                unset($quantity[$key]);
+                            }
+                        }
+                    }
+                    $product_id = array_values($noduplicate);
+                    $quantity = array_values($quantity);
+
+                    $selected_product_count = isset($noduplicate) ? count($noduplicate) : count($order_details);
+                }
                 if (!empty($error)) {
                     echo "<div class='alert alert-danger role='alert'>";
                     foreach ($error as $error_message) {
@@ -134,7 +139,17 @@
         <div>
             <form action="" method="post">
                 <div class="d-flex justify-content-between m-4">
-                    <h5>Ordered By: <?php echo $customers[$order_summaries['customer_id'] - 1]['first_name'] . " " . $customers[$order_summaries['customer_id'] - 1]['last_name'] ?></h5>
+
+                    <h5>Ordered By:
+                        <?php
+                        $customer_query = "SELECT * FROM customers WHERE customer_id=?";
+                        $customer_stmt = $con->prepare($customer_query);
+                        $customer_stmt->bindParam(1, $order_summaries['customer_id']);
+                        $customer_stmt->execute();
+                        $customers = $customer_stmt->fetch(PDO::FETCH_ASSOC);
+                        echo $customers['first_name'] . " " . $customers['last_name']
+                        ?>
+                    </h5>
                     <h5>Order Date and Time: <?php echo $order_summaries['order_date'] ?></h5>
                 </div>
                 <table class="table table-hover table-responsive table-bordered" id="row_del">
@@ -146,8 +161,7 @@
                     </tr>
                     <?php
 
-                    $product_loop = empty($error) ? count($order_details) : count($noduplicate);
-                    for ($x = 0; $x < $product_loop; $x++) {
+                    for ($x = 0; $x < $selected_product_count; $x++) {
 
                     ?>
                         <tr class="pRow">

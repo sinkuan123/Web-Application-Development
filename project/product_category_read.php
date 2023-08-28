@@ -85,11 +85,9 @@
                 extract($row);
                 echo "<tr>";
                 echo "<td>{$id}</td>";
-                echo "<td>{$category_name}</td>";
-                echo "<td class='col-9'>{$description}</td>";
-                echo "<td class='col-3 text-center'>";
-                // read one record
-                echo "<a href='product_category_read_one.php?id={$id}' class='btn btn-info m-r-1em mx-2'>Read</a>";
+                echo "<td><a href='product_category_read_one.php?id={$id}' class='link-dark link-underline link-underline-opacity-25 link-underline-opacity-75-hover'>{$category_name}</a></td>";
+                echo "<td class=''>{$description}</td>";
+                echo "<td class=' text-center'>";
 
                 // we will use this links on next part of this post
                 echo "<a href='product_category_update.php?id={$id}' class='btn btn-primary m-r-1em mx-2'>Edit</a>";

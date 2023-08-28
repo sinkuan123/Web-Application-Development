@@ -39,19 +39,18 @@
                 $manufacture_date = $_POST['manufacture_date'];
                 $expired_date = $_POST['expired_date'];
 
-
                 //Datetime objects
                 $dateStart = new DateTime($manufacture_date);
                 $dateEnd = new DateTime($expired_date);
 
-                // upload to file to folder
-                $target_directory = "uploads/";
-                $target_file = $target_directory . $image;
-                $file_type = pathinfo($target_file, PATHINFO_EXTENSION);
-
+                $target_file = "";
                 $errorMessage = array();
 
                 if ($image) {
+                    // upload to file to folder
+                    $target_directory = "uploads/";
+                    $target_file = $target_directory . $image;
+                    $file_type = pathinfo($target_file, PATHINFO_EXTENSION);
                     //Check whether the size of image isn't square
                     $image_check = getimagesize($_FILES['image']['tmp_name']);
                     $image_width = $image_check[0];
@@ -95,17 +94,12 @@
                 if (empty($manufacture_date)) {
                     $errorMessage[] = "Manufacture date field is empty.";
                 }
-                if (empty($expired_date)) {
-                    $errorMessage[] = "Expired date field is empty.";
+                if (!empty($expired_date) && $expired_date <= $manufacture_date) {
+                    $errorMessage[] = "Expired date must be later than the manufacture date.";
                 }
                 if ($promotion_price >= $price) {
                     $errorMessage[] = "Promotion price must be cheaper than the original price.";
                 }
-                if ($expired_date <= $manufacture_date) {
-                    $errorMessage[] = "Expired date must be later than the manufacture date.";
-                }
-
-
 
                 if (!empty($errorMessage)) {
                     echo "<div class='alert alert-danger m-3'>";

@@ -1,11 +1,19 @@
 <?php include "validatelogin.php"; ?>
-<!DOCTYPE HTML>
 <html>
 
 <head>
     <title>Home</title>
     <!-- Latest compiled and minified Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <style>
+        body {
+            background-image: url(img/login_bg.jpg);
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: center center;
+            background-attachment: fixed;
+        }
+    </style>
 </head>
 
 <body>
@@ -15,7 +23,7 @@
         include 'menu.php';
         ?>
         <div class="font-monospace container col my-3">
-            <h1>Welcome to E-Commerce Website</h1>
+            <h1>Welcome to SK Stationery Store</h1>
         </div>
         <?php
         include "config/database.php";
@@ -40,9 +48,9 @@
         $order_detail_stmt->execute();
         $order_details = $order_detail_stmt->fetchAll(PDO::FETCH_ASSOC);
         ?>
-        <div class="container bg-dark bg-opacity-50 py-5">
-            <h2 class="mx-5 text-white">An Overview of Our Store.</h2>
-            <div class="container row my-5 justify-content-around">
+        <div class="container bg-dark bg-opacity-25 py-5">
+            <h2 class="mx-5 text-black text-center">An Overview of Our Store.</h2>
+            <div class="container row mt-5 justify-content-around">
                 <div class="col-3 border border-3 shadow p-5 text-center bg-white">
                     <h3>Total Number of Customers</h3>
                     <p class="mt-3 fs-4"><?php echo count($customers); ?></p>
@@ -57,9 +65,9 @@
                 </div>
             </div>
         </div>
-        <div class="container bg-dark bg-opacity-25 py-5">
-            <h2 class="mx-5 text-dark text-opacity-75">An Overview of Order</h2>
-            <div class="container row my-5 justify-content-around">
+        <div class="container bg-dark bg-opacity-25">
+            <h2 class="mx-5 text-black text-center">An Overview of Order</h2>
+            <div class="container row mt-5 justify-content-around">
                 <div class="col-4 border border-3 shadow p-5 text-center bg-white">
                     <h3>Latest Order ID and Summary</h3>
                     <p class="mt-3"><span>Customer Name :</span>
@@ -114,60 +122,71 @@
                 </div>
             </div>
         </div>
-        <div class="container bg-dark bg-opacity-50 py-5">
-            <h2 class="mx-5 text-white">An Overview of Our Product</h2>
-            <div class="container row my-5 justify-content-around">
-                <div class="col-4 border border-3 shadow p-5 text-center bg-white">
-                    <h3>Top 5 Selling Products</h3>
-                    <?php
-                    $top_product_query = "SELECT product_id, SUM(quantity) AS total_quantity FROM order_detail GROUP BY product_id ORDER BY total_quantity DESC";
-                    $top_product_stmt = $con->prepare($top_product_query);
-                    $top_product_stmt->execute();
-                    $top_products = $top_product_stmt->fetchAll(PDO::FETCH_ASSOC);
+        <div class="container bg-dark bg-opacity-25 py-5">
+            <h2 class="mx-5 text-black text-center">Top 5 Selling Products</h2>
+            <div class="container my-5 row mx-auto">
+                <?php
+                $top_product_query = "SELECT product_id, SUM(quantity) AS total_quantity FROM order_detail GROUP BY product_id ORDER BY total_quantity DESC";
+                $top_product_stmt = $con->prepare($top_product_query);
+                $top_product_stmt->execute();
+                $top_products = $top_product_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-                    for ($i = 0; $i < 5; $i++) {
-                        if (!empty($top_products[$i])) {
-                            $top_product_id = $top_products[$i]['product_id'];
-                            $top_product_name_query = "SELECT * FROM products WHERE id=?";
-                            $top_product_name_stmt = $con->prepare($top_product_name_query);
-                            $top_product_name_stmt->bindParam(1, $top_product_id);
-                            $top_product_name_stmt->execute();
-                            $top_product_names = $top_product_name_stmt->fetch(PDO::FETCH_ASSOC);
-                            echo "<p>" . $top_product_names['name'] . " (" . $top_products[$i]['total_quantity'] . " SOLD)";
+                for ($i = 0; $i < 5; $i++) {
+                    if (!empty($top_products[$i])) {
+                        $top_product_id = $top_products[$i]['product_id'];
+                        $top_product_name_query = "SELECT * FROM products WHERE id=?";
+                        $top_product_name_stmt = $con->prepare($top_product_name_query);
+                        $top_product_name_stmt->bindParam(1, $top_product_id);
+                        $top_product_name_stmt->execute();
+                        $top_product_details = $top_product_name_stmt->fetch(PDO::FETCH_ASSOC);
+                        echo '<div class="col border border-3 rounded-3 mx-3 shadow p-2 text-center bg-white">';
+                        echo "<div><img src='" . $top_product_details['image'] . "' width='100px'>";
+                        echo "<p>" . $top_product_details['name'] . "<br>";
+                        if ($top_product_details['promotion_price'] != 0) {
+                            echo "<div class='d-flex justify-content-center'><p class='me-1 text-decoration-line-through''>" . number_format((float)$top_product_details['price'], 2, '.', '') . "</p><p >"  . number_format((float)$top_product_details['promotion_price'], 2, '.', '') .  "</p></div>(";
                         } else {
-                            echo "";
+                            echo "<p>" . number_format((float)$top_product_details['price'], 2, '.', '') . "</p>(";
                         }
+                        echo  $top_products[$i]['total_quantity'] . " SOLD)</div></div>";
+                    } else {
+                        echo "";
                     }
-                    ?>
-                </div>
-                <div class="col-4 border border-3 shadow p-5 text-center bg-white">
-                    <h3>3 Products Never Purchased</h3>
-                    <?php
-                    $no_purchased_product_query = "SELECT id FROM products WHERE NOT EXISTS(SELECT product_id FROM order_detail WHERE order_detail.product_id=products.id)";
-                    $no_purchased_product_stmt = $con->prepare($no_purchased_product_query);
-                    $no_purchased_product_stmt->execute();
-                    $no_purchased_products = $no_purchased_product_stmt->fetchAll(PDO::FETCH_ASSOC);
+                }
+                ?>
+            </div>
+            <h2 class="mx-5 text-black text-center">3 Products Never Purchased</h2>
+            <div class="container my-5 row mx-auto">
+                <?php
+                $no_purchased_product_query = "SELECT id FROM products WHERE NOT EXISTS(SELECT product_id FROM order_detail WHERE order_detail.product_id=products.id)";
+                $no_purchased_product_stmt = $con->prepare($no_purchased_product_query);
+                $no_purchased_product_stmt->execute();
+                $no_purchased_products = $no_purchased_product_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-                    for ($i = 0; $i < 3; $i++) {
-                        if (!empty($no_purchased_products[$i])) {
-                            $no_purchased_product_id = $no_purchased_products[$i]['id'];
-                            $no_purchased_product_name_query = "SELECT * FROM products WHERE id=?";
-                            $no_purchased_product_name_stmt = $con->prepare($no_purchased_product_name_query);
-                            $no_purchased_product_name_stmt->bindParam(1, $no_purchased_product_id);
-                            $no_purchased_product_name_stmt->execute();
-                            $no_purchased_product_name = $no_purchased_product_name_stmt->fetch(PDO::FETCH_ASSOC);
-                            echo "<p>" . $no_purchased_product_name['name'] . "</p>";
+                for ($i = 0; $i < 3; $i++) {
+                    if (!empty($no_purchased_products[$i])) {
+                        $no_purchased_product_id = $no_purchased_products[$i]['id'];
+                        $no_purchased_product_name_query = "SELECT * FROM products WHERE id=?";
+                        $no_purchased_product_name_stmt = $con->prepare($no_purchased_product_name_query);
+                        $no_purchased_product_name_stmt->bindParam(1, $no_purchased_product_id);
+                        $no_purchased_product_name_stmt->execute();
+                        $no_purchased_product_details = $no_purchased_product_name_stmt->fetch(PDO::FETCH_ASSOC);
+                        echo '<div class="col border border-3 rounded-3 mx-3 shadow p-2 text-center bg-white">';
+                        echo "<div><img src='" . $no_purchased_product_details['image'] . "' width='100px'>";
+                        echo "<p>" . $no_purchased_product_details['name'] . "<br>";
+                        if ($no_purchased_product_details['promotion_price'] != 0) {
+                            echo "<div class='d-flex justify-content-center'><p class='me-1 text-decoration-line-through''>" . number_format((float)$no_purchased_product_details['price'], 2, '.', '') . "</p><p >"  . number_format((float)$no_purchased_product_details['promotion_price'], 2, '.', '') .  "</p></div>(";
                         } else {
-                            echo "";
+                            echo "<p>" . number_format((float)$no_purchased_product_details['price'], 2, '.', '') . "</p></div></div>";
                         }
+                    } else {
+                        echo "";
                     }
-                    ?>
-                </div>
+                }
+                ?>
             </div>
         </div>
-    </div>
-    <!-- end container -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+        <!-- end container -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
 </body>
 
 </html>

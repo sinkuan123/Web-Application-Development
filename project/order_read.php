@@ -57,7 +57,7 @@
             <div class="w-50">
                 <form method="GET" action="" class="mb-3">
                     <div class="input-group">
-                        <input type="text" name="search" class="form-control" placeholder="Search by name" value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>">
+                        <input type="text" name="search" class="form-control" placeholder="Search by customer name" value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>">
                         <button type="submit" class="btn btn-primary">Search</button>
                     </div>
                 </form>
@@ -70,8 +70,8 @@
 
             //creating our table heading
             echo "<tr>";
-            echo "<th class='col-1'>Order ID</th>";
-            echo "<th class='col-5'>Customer Name</th>";
+            echo "<th>Order ID</th>";
+            echo "<th>Customer Name</th>";
             echo "<th>Total Amount</th>";
             echo "<th>Order Date and Time</th>";
             echo "<th>Action</th>";

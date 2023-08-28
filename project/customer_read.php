@@ -29,7 +29,7 @@
         }
 
         if ($action == 'failed') {
-            echo "<div class='alert alert-danger'>This customer make a order.</div>";
+            echo "<div class='alert alert-danger'>This customer had make an order.</div>";
         }
 
         $search = isset($_GET['search']) ? $_GET['search'] : '';
@@ -90,7 +90,7 @@
                 // creating new table row per record
                 echo "<tr>";
                 echo "<td>{$customer_id}</td>";
-                echo "<td>{$user_name}</td>";
+                echo "<td><a href='customer_read_one.php?id={$customer_id}' class='link-dark link-underline link-underline-opacity-25 link-underline-opacity-75-hover'>{$user_name}</a></td>";
                 echo "<td>{$first_name}</td>";
                 echo "<td>{$last_name}</td>";
                 echo "<td>{$email}</td>";
@@ -103,8 +103,6 @@
                     echo '<td><img src="' . $image . '" width="100px" alt=""></td>';
                 }
                 echo "<td class='text-center'>";
-                // read one record
-                echo "<a href='customer_read_one.php?id={$customer_id}' class='btn btn-info m-r-1em mx-1'>Read</a>";
 
                 // we will use this links on next part of this post
                 echo "<a href='customer_update.php?id={$customer_id}' class='btn btn-primary m-r-1em mx-1'>Edit</a>";

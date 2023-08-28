@@ -40,13 +40,13 @@
                 $usernamePattern = "/^[A-Za-z][A-Za-z0-9_-]{5,}$/";
                 $passwordPattern = "/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{6,}$/";
 
-                $target_directory = "uploads/";
-                $target_file = $target_directory . $image;
-                $file_type = pathinfo($target_file, PATHINFO_EXTENSION);
-
+                $target_file = "";
                 $errorMessage = array();
 
                 if ($image) {
+                    $target_directory = "uploads/";
+                    $target_file = $target_directory . $image;
+                    $file_type = pathinfo($target_file, PATHINFO_EXTENSION);
                     //Check whether the size of image isn't square
                     $image_check = getimagesize($_FILES['image']['tmp_name']);
                     $image_width = $image_check[0];
@@ -56,23 +56,37 @@
                     }
                     // make sure submitted file is not too large, can't be larger than 1 MB
                     if ($_FILES['image']['size'] > (524288)) {
-                        $errorMessage[] = "<div>Image must be less than 512 KB in size.</div>";
+                        $errorMessage[] = "Image must be less than 512 KB in size.";
                     }
                     // make sure that file is a real image
                     if ($image_check == false) {
-                        $errorMessage[] = "<div>Submitted file is not an image.</div>";
+                        $errorMessage[] = "Submitted file is not an image.";
                     }
                     // make sure certain file types are allowed
                     $allowed_file_types = array("jpg", "jpeg", "png", "gif");
                     if (!in_array($file_type, $allowed_file_types)) {
-                        $errorMessage[] = "<div>Only JPG, JPEG, PNG, GIF files are allowed.</div>";
+                        $errorMessage[] = "Only JPG, JPEG, PNG, GIF files are allowed.";
+                    }
+                    // make sure file does not exist
+                    if (file_exists($target_file)) {
+                        $error[] = "Image have been taken by another user. Try to change file name.";
                     }
                 }
+                //check the username isn't exist
+                $username_check_query = "SELECT * FROM customers WHERE user_name=:username";
+                $username_check_stmt = $con->prepare($username_check_query);
+                $username_check_stmt->bindParam(":username", $user_name);
+                $username_check_stmt->execute();
+                $username_check = $username_check_stmt->fetch(PDO::FETCH_ASSOC);
+
                 if (empty($user_name)) {
                     $errorMessage[] = "User Name field is empty.";
                 } else if (!preg_match($usernamePattern, $user_name)) {
                     $errorMessage[] = "Username must be at least 6 characters long, start with a letter, and can only contain letters, digits, '_', or '-'.";
+                } else if (!empty($username_check)) {
+                    $errorMessage[] = "Username has been taken.";
                 }
+
                 if (empty($user_password)) {
                     $errorMessage[] = "Password field is empty.";
                 } else if (!preg_match($passwordPattern, $user_password)) {
@@ -95,11 +109,22 @@
                 }
                 if (empty($date_of_birth)) {
                     $errorMessage[] = "Date of Birth field is empty.";
+                } elseif ($date_of_birth > date('Y-m-d')) {
+                    $errorMessage[] = "Date of Birth can't be latest than today.";
                 }
+
+                //check the email isn't exist
+                $email_check_query = "SELECT * FROM customers WHERE email=:email";
+                $email_check_stmt = $con->prepare($email_check_query);
+                $email_check_stmt->bindParam(":email", $email);
+                $email_check_stmt->execute();
+                $email_check = $email_check_stmt->fetch(PDO::FETCH_ASSOC);
                 if (empty($email)) {
                     $errorMessage[] = "Email field is empty.";
                 } else if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                     $errorMessage[] = "Invalid Email format.";
+                } else if (!empty($email_check)) {
+                    $errorMessage[] = "Email has been taken.";
                 }
                 if (empty($account_status)) {
                     $errorMessage[] = "Account Status field is empty.";
@@ -125,7 +150,6 @@
                     $stmt->bindParam(':gender', $gender);
                     $stmt->bindParam(':date_of_birth', $date_of_birth);
                     $stmt->bindParam(":email", $email);
-                    date_default_timezone_set('Asia/Kuala_Lumpur');
                     $registration_date_time = date('Y-m-d H:i:s');
                     $stmt->bindParam(':registration_date_time', $registration_date_time);
                     $stmt->bindParam(':email', $email);
