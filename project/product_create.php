@@ -79,6 +79,8 @@
 
                 if (empty($name)) {
                     $errorMessage[] = "Name field is empty.";
+                } else if (is_numeric($name)) {
+                    $errorMessage[] = "Name field can't be number.";
                 }
                 if (empty($description)) {
                     $errorMessage[] = "Description field is empty.";
@@ -93,6 +95,8 @@
                 }
                 if (empty($manufacture_date)) {
                     $errorMessage[] = "Manufacture date field is empty.";
+                } else if ($manufacture_date > date('Y-m-d')) {
+                    $errorMessage[] = "Manufacture date can't be later than today.";
                 }
                 if (!empty($expired_date) && $expired_date <= $manufacture_date) {
                     $errorMessage[] = "Expired date must be later than the manufacture date.";

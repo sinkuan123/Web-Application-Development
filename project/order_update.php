@@ -127,7 +127,7 @@
                         $order_details_stmt->bindParam(":quantity", $quantity[$i]);
                         $order_details_stmt->execute();
                     }
-                    echo "<div class='alert alert-success' role='alert'>Order Update Successfully.</div>";
+                    // echo "<div class='alert alert-success' role='alert'>Order Update Successfully.</div>";
                     header("Location: order_detail_read.php?order_id={$order_id}");
                     $_POST = array();
                 }

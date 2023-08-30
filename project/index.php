@@ -143,9 +143,9 @@
                         echo "<div><img src='" . $top_product_details['image'] . "' width='100px'>";
                         echo "<p>" . $top_product_details['name'] . "<br>";
                         if ($top_product_details['promotion_price'] != 0) {
-                            echo "<div class='d-flex justify-content-center'><p class='me-1 text-decoration-line-through''>" . number_format((float)$top_product_details['price'], 2, '.', '') . "</p><p >"  . number_format((float)$top_product_details['promotion_price'], 2, '.', '') .  "</p></div>(";
+                            echo "<div class='d-flex justify-content-center'>RM&nbsp<p class='me-1 text-decoration-line-through''>" . number_format((float)$top_product_details['price'], 2, '.', '') . "</p><p >"  . number_format((float)$top_product_details['promotion_price'], 2, '.', '') .  "</p></div>(";
                         } else {
-                            echo "<p>" . number_format((float)$top_product_details['price'], 2, '.', '') . "</p>(";
+                            echo "<p>RM " . number_format((float)$top_product_details['price'], 2, '.', '') . "</p>(";
                         }
                         echo  $top_products[$i]['total_quantity'] . " SOLD)</div></div>";
                     } else {
@@ -174,9 +174,9 @@
                         echo "<div><img src='" . $no_purchased_product_details['image'] . "' width='100px'>";
                         echo "<p>" . $no_purchased_product_details['name'] . "<br>";
                         if ($no_purchased_product_details['promotion_price'] != 0) {
-                            echo "<div class='d-flex justify-content-center'><p class='me-1 text-decoration-line-through''>" . number_format((float)$no_purchased_product_details['price'], 2, '.', '') . "</p><p >"  . number_format((float)$no_purchased_product_details['promotion_price'], 2, '.', '') .  "</p></div>(";
+                            echo "<div class='d-flex justify-content-center'>RM&nbsp <p class='me-1 text-decoration-line-through''>" . number_format((float)$no_purchased_product_details['price'], 2, '.', '') . "</p><p >"  . number_format((float)$no_purchased_product_details['promotion_price'], 2, '.', '') .  "</p></div>";
                         } else {
-                            echo "<p>" . number_format((float)$no_purchased_product_details['price'], 2, '.', '') . "</p></div></div>";
+                            echo "<p>RM " . number_format((float)$no_purchased_product_details['price'], 2, '.', '') . "</p></div></div>";
                         }
                     } else {
                         echo "";

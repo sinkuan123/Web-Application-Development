@@ -88,7 +88,7 @@
             </tr>
             <tr>
                 <td>Promotion Price</td>
-                <td><?php echo htmlspecialchars(number_format((float)$promotion_price, 2, '.', ''), ENT_QUOTES);  ?></td>
+                <td><?php echo $promotion_price != 0 ? htmlspecialchars(number_format((float)$promotion_price, 2, '.', ''), ENT_QUOTES) : "";  ?></td>
             </tr>
             <tr>
                 <td>Manufacture Date</td>
@@ -112,6 +112,7 @@
                 <td></td>
                 <td>
                     <a href='product_read.php' class='btn btn-danger'>Back to read products</a>
+                    <a href='product_update.php?id=<?php echo $id; ?>' class='btn btn-primary'>Edit products</a>
                 </td>
             </tr>
         </table>

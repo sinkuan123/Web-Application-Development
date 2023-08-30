@@ -26,24 +26,39 @@
 
             $category_name = $_POST['category_name'];
             $description = $_POST['description'];
-            $formatted_name = ucwords(strtolower($category_name));
+            $error = array();
 
             try {
-
-                // insert query
-                $query = "INSERT INTO product_category SET category_name=:category_name, description=:description";
-                // prepare query for execution
-                $stmt = $con->prepare($query);
-                // Bind the parameters
-                $stmt->bindParam(':category_name', $formatted_name);
-                $stmt->bindParam(':description', $description);
-
-                // Execute the query
-                if ($stmt->execute()) {
-                    echo "<div class='alert alert-success m-3'>Record was saved.</div>";
-                    $_POST = array();
+                if (empty($category_name)) {
+                    $error[] = 'Please fill in the category name.';
                 } else {
-                    echo "<div class='alert alert-danger m-3'>Unable to save the record.</div>";
+                    $formatted_name = ucwords(strtolower($category_name));
+                }
+                if (empty($description)) {
+                    $error[] = 'Please fill in the description.';
+                }
+                if (!empty($error)) {
+                    echo "<div class='alert alert-danger m-3'>";
+                    foreach ($error as $errorMessage) {
+                        echo $errorMessage . "<br>";
+                    }
+                    echo "</div>";
+                } else {
+                    // insert query
+                    $query = "INSERT INTO product_category SET category_name=:category_name, description=:description";
+                    // prepare query for execution
+                    $stmt = $con->prepare($query);
+                    // Bind the parameters
+                    $stmt->bindParam(':category_name', $formatted_name);
+                    $stmt->bindParam(':description', $description);
+
+                    // Execute the query
+                    if ($stmt->execute()) {
+                        echo "<div class='alert alert-success m-3'>Record was saved.</div>";
+                        $_POST = array();
+                    } else {
+                        echo "<div class='alert alert-danger m-3'>Unable to save the record.</div>";
+                    }
                 }
             }
 

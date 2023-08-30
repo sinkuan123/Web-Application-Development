@@ -12,7 +12,7 @@
 <body>
     <!-- container -->
     <div class="container">
-        <?php include 'menu.php' ?>
+        <?php include 'menu.php'; ?>
         <div class="page-header">
             <h1>Update Product</h1>
         </div>
@@ -72,7 +72,8 @@
                     $delete_stmt->bindParam(":id", $id);
                     $delete_stmt->execute();
                     unlink($image);
-                    header("Location: product_read_one.php?id={$id}");
+                    echo "<script>window.location.replace('product_read_one.php?id=$id')</script>";
+                    exit();
                 } else {
                     // write update query
                     // in this case, it seemed like we have so many fields to pass and
@@ -98,29 +99,28 @@
                     $target_directory = "uploads/";
                     $target_file = $target_directory . $image;
                     $file_type = pathinfo($target_file, PATHINFO_EXTENSION);
-
                     $errorMessage = array();
 
                     if ($image) {
-                        //Check whether the size of image isn't square
-                        $image_check = getimagesize($_FILES['image']['tmp_name']);
-                        $image_width = $image_check[0];
-                        $image_height = $image_check[1];
-                        if ($image_width != $image_height) {
-                            $errorMessage[] = "Only square size image allowed.";
-                        }
-                        // make sure submitted file is not too large, can't be larger than 1 MB
                         if ($_FILES['image']['size'] > (524288)) {
-                            $errorMessage[] = "<div>Image must be less than 512 KB in size.</div>";
+                            $errorMessage[] = "Image must be less than 512 KB in size.";
                         }
                         // make sure that file is a real image
+                        $image_check = getimagesize($_FILES['image']['tmp_name']);
                         if ($image_check == false) {
-                            $errorMessage[] = "<div>Submitted file is not an image.</div>";
+                            $errorMessage[] = "Submitted file is not an image.";
                         }
                         // make sure certain file types are allowed
                         $allowed_file_types = array("jpg", "jpeg", "png", "gif");
                         if (!in_array($file_type, $allowed_file_types)) {
-                            $errorMessage[] = "<div>Only JPG, JPEG, PNG, GIF files are allowed.</div>";
+                            $errorMessage[] = "Only JPG, JPEG, PNG, GIF files are allowed.";
+                        } else {
+                            //Check whether the size of image isn't square
+                            $image_width = $image_check[0];
+                            $image_height = $image_check[1];
+                            if ($image_width != $image_height) {
+                                $errorMessage[] = "Only square size image allowed.";
+                            }
                         }
                         // make sure file does not exist
                         if (file_exists($target_file)) {
@@ -130,6 +130,8 @@
 
                     if (empty($name)) {
                         $errorMessage[] = "Name field is empty.";
+                    } else if (is_numeric($name)) {
+                        $errorMessage[] = "Name field can't be number.";
                     }
                     if (empty($description)) {
                         $errorMessage[] = "Description field is empty.";
@@ -144,6 +146,8 @@
                     }
                     if (empty($manufacture_date)) {
                         $errorMessage[] = "Manufacture date field is empty.";
+                    } else if ($manufacture_date > date('Y-m-d')) {
+                        $errorMessage[] = "Manufacture date can't be later than today.";
                     }
                     if (!empty($expired_date) && $expired_date <= $manufacture_date) {
                         $errorMessage[] = "Expired date must be later than the manufacture date.";
@@ -181,6 +185,7 @@
                                 if ($target_file != $row['image'] && $row['image'] != "") {
                                     unlink($row['image']);
                                 }
+
                                 // make sure the 'uploads' folder exists
                                 // if not, create it
                                 if (!is_dir($target_directory)) {
@@ -208,7 +213,7 @@
                                     echo "</div>";
                                 }
                             }
-                            header("Location: product_read_one.php?id={$id}&action=update_success");
+                            echo "<script>window.location.replace('product_read_one.php?id=$id')</script>";
                         } else {
                             echo "<div class='alert alert-danger'>Unable to update record. Please try again.</div>";
                         }
@@ -258,7 +263,7 @@
                 </tr>
                 <tr>
                     <td>promotion_price</td>
-                    <td><input type='text' name='promotion_price' value="<?php echo htmlspecialchars(number_format((float)$promotion_price, 2, '.', ''), ENT_QUOTES);  ?>" class='form-control' /></td>
+                    <td><input type='text' name='promotion_price' value="<?php echo $promotion_price != 0 ? htmlspecialchars(number_format((float)$promotion_price, 2, '.', ''), ENT_QUOTES) : "";  ?>" class='form-control' /></td>
                 </tr>
                 <tr>
                     <td>Manufacture Date</td>

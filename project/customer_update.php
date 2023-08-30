@@ -58,7 +58,7 @@
                     header("Location: customer_read_one.php?id={$id}");
                 } else {
                     $query = "UPDATE customers
-                SET user_name=:user_name, first_name=:first_name, last_name=:last_name, gender=:gender, date_of_birth=:date_of_birth, email=:email,
+                SET first_name=:first_name, last_name=:last_name, gender=:gender, date_of_birth=:date_of_birth, email=:email,
                 account_status=:account_status, image=:image";
                     // prepare query for excecution
 
@@ -77,6 +77,8 @@
                         ? sha1_file($_FILES['image']['tmp_name']) . "-" . basename($_FILES["image"]["name"])
                         : "";
                     $image = htmlspecialchars(strip_tags($image));
+                    $usernamePattern = "/^[A-Za-z][A-Za-z0-9_-]{5,}$/";
+                    $passwordPattern = "/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{6,}$/";
                     // upload to file to folder
                     $target_directory = "uploads/";
                     $target_file = $target_directory . $image;
@@ -109,6 +111,7 @@
                             $error[] = "<div>Image already exists. Try to change file name.</div>";
                         }
                     }
+
                     if (!empty($old_password) && !empty($new_password) && !empty($confirm_password)) {
                         if ($new_password == $confirm_password) {
                             if ($old_password == $password) {
@@ -125,9 +128,23 @@
                         }
                     }
 
+                    if (empty($first_name)) {
+                        $error[] = "First Name field is empty.";
+                    }
+                    if (empty($last_name)) {
+                        $error[] = "Last Name field is empty.";
+                    }
 
-                    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    if (empty($email)) {
+                        $error[] = "Email field is empty.";
+                    } else if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                         $error[] = "Invalid Email format.";
+                    }
+
+                    if (empty($date_of_birth)) {
+                        $error[] = "Date of Birth field is empty.";
+                    } elseif ($date_of_birth > date('Y-m-d')) {
+                        $error[] = "Date of Birth can't be latest than today.";
                     }
 
                     if (!empty($error)) {
@@ -144,7 +161,6 @@
                         $query .= " WHERE customer_id=:id";
                         $stmt = $con->prepare($query);
                         $stmt->bindParam(":id", $id);
-                        $stmt->bindParam(':user_name', $user_name);
                         if (isset($formatted_password)) {
                             $stmt->bindParam(':user_password', $formatted_password);
                         }
@@ -161,7 +177,6 @@
                         }
                         // Execute the query
                         if ($stmt->execute()) {
-                            echo "<div class='alert alert-success'>Record was updated.</div>";
                             if ($image) {
                                 if ($target_file != $row['image'] && $row['image'] != "") {
                                     unlink($row['image']);
@@ -203,7 +218,11 @@
             }
             // show errors
             catch (PDOException $exception) {
-                echo "<div class='alert alert-danger'>ERROR: " . $exception->getMessage() . "</div>";
+                if ($exception->getCode() == 23000) {
+                    echo '<div class="alert alert-danger role=alert">' . 'Email has been taken.' . '</div>';
+                } else {
+                    echo '<div class="alert alert-danger role=alert">' . $exception->getMessage() . '</div>';
+                }
             }
         } ?>
 
@@ -211,7 +230,7 @@
             <table class='table table-hover table-responsive table-bordered'>
                 <tr>
                     <td>User Name</td>
-                    <td><input type='text' name='user_name' value="<?php echo htmlspecialchars($user_name, ENT_QUOTES);  ?>" class='form-control' /></td>
+                    <td><input type='text' name='user_name' readonly value="<?php echo htmlspecialchars($user_name, ENT_QUOTES);  ?>" class='form-control' /></td>
                 </tr>
                 <tr>
                     <td>Password</td>
@@ -241,7 +260,9 @@
                                                                                             echo 'checked';
                                                                                         } ?>>
                         <label for="female">Female</label><br>
-                        <input type="radio" id="others" name="gender" value="Others" <?php $checked = $gender == "Others" ? "checked" : "" ?> $checked>
+                        <input type="radio" id="others" name="gender" value="Others" <?php if ($row['gender'] == "Others") {
+                                                                                            echo 'checked';
+                                                                                        } ?>>
                         <label for="others">Others</label>
                     </td>
                 </tr>

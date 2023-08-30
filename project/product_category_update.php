@@ -51,27 +51,42 @@
         }
 
         if ($_POST) {
+            $name = htmlspecialchars(strip_tags($_POST['name']));
+            $description = htmlspecialchars(strip_tags($_POST['description']));
             try {
-                // write update query
-                // in this case, it seemed like we have so many fields to pass and
-                // it is better to label them and not use question marks
-                $query = "UPDATE product_category SET category_name=:name, description=:description WHERE id = :id";
-                // prepare query for excecution
-                $stmt = $con->prepare($query);
-                // posted values
-                $name = htmlspecialchars(strip_tags($_POST['name']));
-                $description = htmlspecialchars(strip_tags($_POST['description']));
-
-                // bind the parameters
-                $stmt->bindParam(':name', $name);
-                $stmt->bindParam(':description', $description);
-                $stmt->bindParam(":id", $id);
-
-                // Execute the query
-                if ($stmt->execute()) {
-                    echo "<div class='alert alert-success'>Record was updated.</div>";
+                if (empty($name)) {
+                    $error[] = 'Please fill in the category name.';
                 } else {
-                    echo "<div class='alert alert-danger'>Unable to update record. Please try again.</div>";
+                    $formatted_name = ucwords(strtolower($name));
+                }
+                if (empty($description)) {
+                    $error[] = 'Please fill in the description.';
+                }
+                if (!empty($error)) {
+                    echo "<div class='alert alert-danger m-3'>";
+                    foreach ($error as $errorMessage) {
+                        echo $errorMessage . "<br>";
+                    }
+                    echo "</div>";
+                } else {
+                    // write update query
+                    // in this case, it seemed like we have so many fields to pass and
+                    // it is better to label them and not use question marks
+                    $query = "UPDATE product_category SET category_name=:name, description=:description WHERE id = :id";
+                    // prepare query for excecution
+                    $stmt = $con->prepare($query);
+
+                    // bind the parameters
+                    $stmt->bindParam(':name', $formatted_name);
+                    $stmt->bindParam(':description', $description);
+                    $stmt->bindParam(":id", $id);
+
+                    // Execute the query
+                    if ($stmt->execute()) {
+                        echo "<div class='alert alert-success'>Record was updated.</div>";
+                    } else {
+                        echo "<div class='alert alert-danger'>Unable to update record. Please try again.</div>";
+                    }
                 }
             }
             // show errors
