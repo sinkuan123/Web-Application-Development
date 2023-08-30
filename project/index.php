@@ -141,7 +141,11 @@
                             $top_product_name_stmt->execute();
                             $top_product_details = $top_product_name_stmt->fetch(PDO::FETCH_ASSOC);
                             echo '<div class="col border border-3 rounded-3 mx-3 shadow p-2 text-center bg-white">';
-                            echo "<div><img src='" . $top_product_details['image'] . "' width='100px'>";
+                            if ($top_product_details['image'] != "") {
+                                echo "<div><img class='img-fluid' src='" . $top_product_details['image'] . "' width='100px'>";
+                            } else {
+                                echo "<div><img class='img-fluid' src='img/productpicture.png' width='100px'>";
+                            }
                             echo "<p>" . $top_product_details['name'] . "<br>";
                             if ($top_product_details['promotion_price'] != 0) {
                                 echo "<div class='d-flex justify-content-center'>RM&nbsp<p class='me-1 text-decoration-line-through''>" . number_format((float)$top_product_details['price'], 2, '.', '') . "</p><p >"  . number_format((float)$top_product_details['promotion_price'], 2, '.', '') .  "</p></div>(";
@@ -155,7 +159,7 @@
                     }
                     ?>
                 </div>
-                <h2 class="mx-5 text-black text-center">3 Products Never Purchased</h2>
+                <h2 class="mx-5 text-black text-center">Products Never Purchased</h2>
                 <div class="container my-5 row mx-auto">
                     <?php
                     $no_purchased_product_query = "SELECT id FROM products WHERE NOT EXISTS(SELECT product_id FROM order_detail WHERE order_detail.product_id=products.id)";
@@ -163,7 +167,7 @@
                     $no_purchased_product_stmt->execute();
                     $no_purchased_products = $no_purchased_product_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-                    for ($i = 0; $i < 3; $i++) {
+                    for ($i = 0; $i < count($no_purchased_products); $i++) {
                         if (!empty($no_purchased_products[$i])) {
                             $no_purchased_product_id = $no_purchased_products[$i]['id'];
                             $no_purchased_product_name_query = "SELECT * FROM products WHERE id=?";
@@ -171,9 +175,13 @@
                             $no_purchased_product_name_stmt->bindParam(1, $no_purchased_product_id);
                             $no_purchased_product_name_stmt->execute();
                             $no_purchased_product_details = $no_purchased_product_name_stmt->fetch(PDO::FETCH_ASSOC);
-                            echo '<div class="col border border-3 rounded-3 mx-3 shadow p-2 text-center bg-white">';
-                            echo "<div><img src='" . $no_purchased_product_details['image'] . "' width='100px'></div>";
-                            echo "<p>" . $no_purchased_product_details['name'] . "<br>";
+                            echo '<div class="col border border-3 rounded-3 m-3 shadow p-2 text-center bg-white">';
+                            if ($no_purchased_product_details['image'] != "") {
+                                echo "<div><img class='img-fluid' src='" . $no_purchased_product_details['image'] . "' width='100px'></div>";
+                            } else {
+                                echo "<div><img class='img-fluid' src='img/productpicture.png' width='100px'></div>";
+                            }
+                            echo "<div class='text-break'>" . $no_purchased_product_details['name'] . "</div><br>";
                             if ($no_purchased_product_details['promotion_price'] != 0) {
                                 echo "<div class='d-flex justify-content-center'>RM&nbsp <p class='me-1 text-decoration-line-through''>" . number_format((float)$no_purchased_product_details['price'], 2, '.', '') . "</p><p >"  . number_format((float)$no_purchased_product_details['promotion_price'], 2, '.', '') .  "</p></div></div>";
                             } else {
