@@ -79,7 +79,7 @@
             echo "<th>Name</th>";
             echo "<th>Category</th>";
             echo "<th>Description</th>";
-            echo "<th>Price</th>";
+            echo "<th>Price (RM)</th>";
             echo "<th>Image</th>";
             echo "<th>Action</th>";
             echo "</tr>";

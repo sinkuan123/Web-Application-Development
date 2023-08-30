@@ -88,23 +88,25 @@
                     if ($image) {
                         //Check whether the size of image isn't square
                         $image_check = getimagesize($_FILES['image']['tmp_name']);
-                        $image_width = $image_check[0];
-                        $image_height = $image_check[1];
-                        if ($image_width != $image_height) {
-                            $error[] = "Only square size image allowed.";
-                        }
+
                         // make sure submitted file is not too large, can't be larger than 1 MB
                         if ($_FILES['image']['size'] > (524288)) {
-                            $error[] = "<div>Image must be less than 512 KB in size.</div>";
+                            $error[] = "Image must be less than 512 KB in size.";
                         }
                         // make sure that file is a real image
                         if ($image_check == false) {
-                            $error[] = "<div>Submitted file is not an image.</div>";
+                            $error[] = "Submitted file is not an image.";
                         }
                         // make sure certain file types are allowed
                         $allowed_file_types = array("jpg", "jpeg", "png", "gif");
                         if (!in_array($file_type, $allowed_file_types)) {
-                            $error[] = "<div>Only JPG, JPEG, PNG, GIF files are allowed.</div>";
+                            $error[] = "Only JPG, JPEG, PNG, GIF files are allowed.";
+                        } else {
+                            $image_width = $image_check[0];
+                            $image_height = $image_check[1];
+                            if ($image_width != $image_height) {
+                                $error[] = "Only square size image allowed.";
+                            }
                         }
                         // make sure file does not exist
                         if (file_exists($target_file)) {
@@ -125,6 +127,18 @@
                             }
                         } else {
                             $error[] = "The confirm password doesn't match with new password.";
+                        }
+                    } else if (!empty($old_password)) {
+                        if (empty($new_password) || empty($confirm_password)) {
+                            $error[] = "Fill all three password field to update password.";
+                        }
+                    } else if (!empty($new_password)) {
+                        if (empty($old_password) || empty($confirm_password)) {
+                            $error[] = "Fill all three password field to update password.";
+                        }
+                    } else if (!empty($confirm_password)) {
+                        if (empty($new_password) || empty($old_password)) {
+                            $error[] = "Fill all three password field to update password.";
                         }
                     }
 

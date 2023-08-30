@@ -56,6 +56,8 @@
             try {
                 if (empty($name)) {
                     $error[] = 'Please fill in the category name.';
+                } else if (is_numeric($name)) {
+                    $error[] = "Category name can't be number.";
                 } else {
                     $formatted_name = ucwords(strtolower($name));
                 }
