@@ -25,7 +25,7 @@ try {
     if ($products != 0) {
         header("Location: product_read.php?action=failed");
     } else if ($stmt->execute()) {
-        if ($image['image'] != "img/productpicture.png") {
+        if ($image['image'] != "") {
             if (file_exists($image['image'])) {
                 unlink($image['image']);
             }

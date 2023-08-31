@@ -26,7 +26,7 @@ try {
         header("Location: customer_read.php?action=failed");
     } else {
         if ($stmt->execute()) {
-            if ($image['image'] != "img/profilepicture.png") {
+            if ($image['image'] != "") {
                 if (file_exists($image['image'])) {
                     unlink($image['image']);
                 }
